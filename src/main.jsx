@@ -1,3 +1,6 @@
+// src/main.jsx
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -11,16 +14,19 @@ import Login from "./pages/Login.jsx";
 import "./index.css";
 
 const qc = new QueryClient();
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <App />, // App será tu Layout
     children: [
-      { index: true, element: <Dashboard /> },
+      { index: true, element: <Dashboard /> }, // "/" -> Dashboard
       { path: "expenses", element: <Expenses /> },
       { path: "categories", element: <Categories /> },
       { path: "vendors", element: <Vendors /> },
       { path: "login", element: <Login /> },
+      // opcional: si quieres que /dashboard también funcione
+      { path: "dashboard", element: <Dashboard /> },
     ],
   },
 ]);

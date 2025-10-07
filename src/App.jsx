@@ -1,19 +1,33 @@
-import { Outlet, Link, NavLink } from "react-router-dom";
+// src/App.jsx
+import { NavLink, Outlet } from "react-router-dom";
 
 export default function App() {
   return (
-    <div className="min-h-screen flex">
-      <aside style={{ padding: 16, width: 240, borderRight: "1px solid #eee" }}>
-        <h2>MCJ Expenses</h2>
-        <nav style={{ display: "grid", gap: 8, marginTop: 12 }}>
-          <NavLink to="/">Dashboard</NavLink>
-          <NavLink to="/expenses">Expenses</NavLink>
-          <NavLink to="/categories">Categories</NavLink>
-          <NavLink to="/vendors">Vendors</NavLink>
+    <div className="min-vh-100 d-flex">
+      <aside className="border-end" style={{ width: 240 }}>
+        <div className="p-3 fw-bold">MCJ Expenses</div>
+        <nav className="nav flex-column px-3 gap-2">
+          {/* Usa "/" para Dashboard (o "/dashboard" si dejas esa ruta adicional) */}
+          <NavLink className="nav-link p-0" to="/" end>
+            Dashboard
+          </NavLink>
+          <NavLink className="nav-link p-0" to="/expenses">
+            Expenses
+          </NavLink>
+          <NavLink className="nav-link p-0" to="/categories">
+            Categories
+          </NavLink>
+          <NavLink className="nav-link p-0" to="/vendors">
+            Vendors
+          </NavLink>
         </nav>
       </aside>
-      <main style={{ padding: 24, flex: 1 }}>
-        <Outlet />
+
+      <main className="flex-grow-1">
+        <div className="container py-4">
+          {/* Aquí se pinta la página según la ruta */}
+          <Outlet />
+        </div>
       </main>
     </div>
   );
