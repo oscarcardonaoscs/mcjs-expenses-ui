@@ -1,6 +1,6 @@
 // src/api/hooks.js
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api"; // <- tu ruta: src/lib/api.js
+import { api } from "@/lib/api"; 
 
 export function useCategories() {
   return useQuery({
