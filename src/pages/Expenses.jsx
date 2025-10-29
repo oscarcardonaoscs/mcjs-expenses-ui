@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import ExpenseForm from "@/components/ExpenseForm";
@@ -5,13 +6,18 @@ import { ExpensesTable } from "@/components/ExpensesTable";
 
 export default function Expenses() {
   const qc = useQueryClient();
+  const [mode, setMode] = useState("list"); // 'list' | 'create'
 
   // 🔹 Obtener gastos existentes
-  const { data, isLoading, isError, error } = useQuery({
+  const {
+    data = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => {
       const { data } = await api.get("/expenses");
-      // adaptar nombres a objetos esperados por la tabla
       return (data.items ?? []).map((e) => ({
         ...e,
         category: e.category_name ? { name: e.category_name } : null,
@@ -31,19 +37,33 @@ export default function Expenses() {
     },
   });
 
+  // 🔹 Handlers
+  const startCreate = () => setMode("create");
+  const cancelCreate = () => setMode("list");
+
+  const handleSubmit = async (payload) => {
+    await mutateAsync(payload);
+    setMode("list");
+  };
+
   return (
     <div className="container mt-4">
-      <header className="border-bottom pb-3 mb-4 d-flex justify-content-between align-items-center">
+      <div className="border-bottom pb-3 mb-4 d-flex align-items-center justify-content-between">
         <h1 className="h3 m-0">Expenses</h1>
-      </header>
+        {mode === "list" && (
+          <button className="btn btn-success" onClick={startCreate}>
+            New Expense
+          </button>
+        )}
+      </div>
 
-      {/* Formulario para agregar gasto */}
-      <ExpenseForm onSubmit={mutateAsync} isSubmitting={isPending} />
-
-      <hr className="my-4" />
-
-      {/* Tabla de gastos */}
-      {isLoading ? (
+      {mode === "create" ? (
+        <ExpenseForm
+          onSubmit={handleSubmit}
+          isSubmitting={isPending}
+          onCancel={cancelCreate}
+        />
+      ) : isLoading ? (
         <div className="text-center py-4">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Cargando...</span>

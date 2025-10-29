@@ -5,7 +5,7 @@ import { NavLink, Outlet } from "react-router-dom";
 function SidebarLinks({ onNavigate }) {
   const linkCls = ({ isActive }) =>
     "nav-link p-0" + (isActive ? " fw-semibold text-primary" : "");
-  const handleClick = () => onNavigate?.(); // para cerrar el offcanvas al navegar
+  const handleClick = () => onNavigate?.(); // cerrar offcanvas al navegar
 
   return (
     <nav className="nav flex-column gap-2">
@@ -31,16 +31,23 @@ export default function App() {
     const el = document.getElementById("appSidebar");
     if (!el) return;
     // Bootstrap 5 Offcanvas API
-    const offcanvas = bootstrap?.Offcanvas?.getInstance(el);
+    const offcanvas = window.bootstrap?.Offcanvas?.getInstance(el);
     offcanvas?.hide();
   };
 
   return (
     <div className="min-vh-100 d-flex">
-      {/* Aside fijo solo en >= md */}
-      <aside className="border-end d-none d-md-block" style={{ width: 240 }}>
-        <div className="p-3 fw-bold">MCJ Expenses</div>
-        <div className="px-3">
+      {/* Aside fijo (solo >= md) */}
+      <aside
+        className="border-end d-none d-md-flex flex-column"
+        style={{ width: 240 }}
+      >
+        <div className="p-3 fw-bold border-bottom">MCJ Expenses</div>
+        {/* Hacemos sticky dentro del viewport y con scroll propio */}
+        <div
+          className="px-3 pt-3 position-sticky"
+          style={{ top: 0, maxHeight: "calc(100vh - 56px)", overflowY: "auto" }}
+        >
           <SidebarLinks />
         </div>
       </aside>
@@ -48,7 +55,7 @@ export default function App() {
       {/* Contenido principal */}
       <main className="flex-grow-1 d-flex flex-column">
         {/* Topbar con hamburguesa visible en < md */}
-        <header className="navbar navbar-light bg-white border-bottom py-2 px-3 d-flex align-items-center gap-2">
+        <header className="navbar bg-white border-bottom py-2 px-3 d-flex align-items-center gap-2">
           <button
             className="navbar-toggler d-md-none"
             type="button"
@@ -62,7 +69,8 @@ export default function App() {
           <div className="fw-bold">MCJ Expenses</div>
         </header>
 
-        <div className="container py-4 flex-grow-1">
+        {/* Contenedor fluido para aprovechar todo el ancho en escritorio */}
+        <div className="container-fluid py-4 flex-grow-1">
           <Outlet />
         </div>
       </main>

@@ -50,7 +50,7 @@ export default function Categories() {
 
   return (
     <div className="container py-3">
-      <div className="d-flex align-items-center justify-content-between mb-3">
+      <div className="border-bottom pb-3 mb-4 d-flex align-items-center justify-content-between">
         <h2 className="m-0">Categories</h2>
         {mode === "list" && (
           <button className="btn btn-success" onClick={startCreate}>

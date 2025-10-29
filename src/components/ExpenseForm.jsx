@@ -466,7 +466,7 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
               disabled={isSubmitting || !hasCategory}
             >
               <i className="bi bi-plus-circle me-2" />
-              {isSubmitting ? "Guardando..." : "Agregar gasto"}
+              {isSubmitting ? "Guardando..." : "Guardar gasto"}
             </button>
           </div>
         </>
