@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Expenses from "./pages/Expenses.jsx";
 import Categories from "./pages/Categories.jsx";
 import Vendors from "./pages/Vendors.jsx";
+import PaymentAccounts from "./pages/PaymentAccounts.jsx";
 import Login from "./pages/Login.jsx";
 import "./index.css";
 
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
       { path: "expenses", element: <Expenses /> },
       { path: "categories", element: <Categories /> },
       { path: "vendors", element: <Vendors /> },
+      { path: "payment-accounts", element: <PaymentAccounts /> },
       { path: "login", element: <Login /> },
       // opcional: si quieres que /dashboard también funcione
       { path: "dashboard", element: <Dashboard /> },

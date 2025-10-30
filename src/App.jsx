@@ -1,11 +1,15 @@
 // src/App.jsx
 import { NavLink, Outlet } from "react-router-dom";
 
-// Reutilizamos los mismos enlaces para el aside y el offcanvas
 function SidebarLinks({ onNavigate }) {
   const linkCls = ({ isActive }) =>
     "nav-link p-0" + (isActive ? " fw-semibold text-primary" : "");
-  const handleClick = () => onNavigate?.(); // cerrar offcanvas al navegar
+
+  // Dejamos que React Router navegue y luego cerramos el offcanvas
+  const handleClick = () => {
+    if (!onNavigate) return;
+    setTimeout(() => onNavigate(), 100); // pequeño delay para no interferir
+  };
 
   return (
     <nav className="nav flex-column gap-2">
@@ -21,29 +25,29 @@ function SidebarLinks({ onNavigate }) {
       <NavLink className={linkCls} to="/vendors" onClick={handleClick}>
         Vendors
       </NavLink>
+      <NavLink className={linkCls} to="/payment-accounts" onClick={handleClick}>
+        Payment Accounts
+      </NavLink>
     </nav>
   );
 }
 
 export default function App() {
-  // Cierra el offcanvas al seleccionar una ruta (en móvil)
   const closeOffcanvas = () => {
     const el = document.getElementById("appSidebar");
     if (!el) return;
-    // Bootstrap 5 Offcanvas API
-    const offcanvas = window.bootstrap?.Offcanvas?.getInstance(el);
-    offcanvas?.hide();
+    const inst = window.bootstrap?.Offcanvas?.getOrCreateInstance(el);
+    inst?.hide();
   };
 
   return (
     <div className="min-vh-100 d-flex">
-      {/* Aside fijo (solo >= md) */}
+      {/* Aside fijo (>= md) */}
       <aside
         className="border-end d-none d-md-flex flex-column"
         style={{ width: 240 }}
       >
-        <div className="p-3 fw-bold border-bottom">MCJ Expenses</div>
-        {/* Hacemos sticky dentro del viewport y con scroll propio */}
+        <div className="p-3 fw-bold border-bottom">MCJ's Expenses</div>
         <div
           className="px-3 pt-3 position-sticky"
           style={{ top: 0, maxHeight: "calc(100vh - 56px)", overflowY: "auto" }}
@@ -52,9 +56,8 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Contenido principal */}
+      {/* Main */}
       <main className="flex-grow-1 d-flex flex-column">
-        {/* Topbar con hamburguesa visible en < md */}
         <header className="navbar bg-white border-bottom py-2 px-3 d-flex align-items-center gap-2">
           <button
             className="navbar-toggler d-md-none"
@@ -66,16 +69,15 @@ export default function App() {
           >
             <span className="navbar-toggler-icon" />
           </button>
-          <div className="fw-bold">MCJ Expenses</div>
+          <div className="fw-bold">MCJ's Expenses</div>
         </header>
 
-        {/* Contenedor fluido para aprovechar todo el ancho en escritorio */}
         <div className="container-fluid py-4 flex-grow-1">
           <Outlet />
         </div>
       </main>
 
-      {/* Offcanvas: menú lateral para móvil */}
+      {/* Offcanvas móvil */}
       <div
         className="offcanvas offcanvas-start d-md-none"
         tabIndex="-1"
@@ -84,7 +86,7 @@ export default function App() {
       >
         <div className="offcanvas-header">
           <h5 className="offcanvas-title" id="appSidebarLabel">
-            MCJ Expenses
+            MCJ's Expenses
           </h5>
           <button
             type="button"
@@ -94,6 +96,7 @@ export default function App() {
           />
         </div>
         <div className="offcanvas-body">
+          {/* Usamos el cierre programado, sin data-bs-dismiss en los links */}
           <SidebarLinks onNavigate={closeOffcanvas} />
         </div>
       </div>

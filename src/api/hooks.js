@@ -1,7 +1,8 @@
 // src/api/hooks.js
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api"; 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
+// ---------- Categories ----------
 export function useCategories() {
   return useQuery({
     queryKey: ["categories"],
@@ -13,6 +14,7 @@ export function useCategories() {
   });
 }
 
+// ---------- Vendors ----------
 export function useVendors() {
   return useQuery({
     queryKey: ["vendors"],
@@ -21,5 +23,50 @@ export function useVendors() {
       return (data?.items ?? []).sort((a, b) => a.name.localeCompare(b.name));
     },
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+// ---------- Payment Accounts ----------
+export function usePaymentAccounts() {
+  return useQuery({
+    queryKey: ["payment-accounts"],
+    queryFn: async () => {
+      const { data } = await api.get("/payment-accounts");
+      return (data?.items ?? []).sort((a, b) => a.name.localeCompare(b.name));
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+// ---------- Mutations: Payment Accounts ----------
+export function useCreatePaymentAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data } = await api.post("/payment-accounts", payload);
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["payment-accounts"] }),
+  });
+}
+
+export function useUpdatePaymentAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, payload }) => {
+      const { data } = await api.put(`/payment-accounts/${id}`, payload);
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["payment-accounts"] }),
+  });
+}
+
+export function useDeletePaymentAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id) => {
+      await api.delete(`/payment-accounts/${id}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["payment-accounts"] }),
   });
 }
