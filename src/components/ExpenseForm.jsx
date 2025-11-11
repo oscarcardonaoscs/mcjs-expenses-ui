@@ -6,9 +6,61 @@ import { useCategories, useVendors, usePaymentAccounts } from "@/api/hooks";
 const TAX_RATE = 0.09;
 const normalize = (s = "") => s.toString().trim().toLowerCase();
 
+function makeDefaults() {
+  return {
+    // comunes
+    date: new Date().toISOString().slice(0, 10),
+    category_id: "", // ⬅️ dejar vacío para “— Select —”
+    vendor_id: "",
+    payment_method: "",
+    payment_account_id: "",
+    receipt_url: "",
+    description: "",
+    notes: "",
+    apply_tax: true,
+
+    // SUPPLIES
+    s_quantity: "",
+    s_unit_price: "",
+
+    // CAR
+    gallons_miles: "",
+    c_unit_price: "",
+    c_expense_type: "Fuel",
+    c_other_subtotal: "",
+
+    // GENERAL
+    g_subtotal: "",
+    g_expense_type: "General",
+
+    // HELPERS
+    h_helper_name: "",
+    h_task_project: "",
+    h_hours: "",
+    h_rate: "",
+    h_paid: false,
+  };
+}
+
 function inferModeFromCategoryName(name = "") {
   if (!name) return null;
   const n = normalize(name);
+
+  // Helpers / Payroll
+  if (
+    [
+      "helpers",
+      "helper",
+      "payroll",
+      "labor",
+      "wages",
+      "sueldo",
+      "sueldos",
+      "pago ayudante",
+      "pago ayudantes",
+    ].some((k) => n.includes(k))
+  )
+    return "HELPERS";
 
   // Supplies
   if (["supplies", "supply", "insumos"].some((k) => n.includes(k)))
@@ -43,32 +95,7 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
     getValues,
     formState: { errors },
   } = useForm({
-    defaultValues: {
-      // comunes
-      date: new Date().toISOString().slice(0, 10),
-      category_id: "",
-      vendor_id: "",
-      payment_method: "",
-      payment_account_id: "",
-      receipt_url: "",
-      description: "",
-      notes: "",
-      apply_tax: true,
-
-      // SUPPLIES
-      s_quantity: "",
-      s_unit_price: "",
-
-      // CAR
-      gallons_miles: "",
-      c_unit_price: "",
-      c_expense_type: "Fuel", // Fuel | Maintenance | Other
-      c_other_subtotal: "", // para Car -> Other (similar a General)
-
-      // GENERAL
-      g_subtotal: "",
-      g_expense_type: "General",
-    },
+    defaultValues: makeDefaults(),
   });
 
   // Data
@@ -131,7 +158,12 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
   const gTax = +(apply_tax ? gSubtotal * TAX_RATE : 0).toFixed(2);
   const gTotal = +(gSubtotal + gTax).toFixed(2);
 
-  // Label de Vendor (por si luego quieres diferenciar)
+  // HELPERS
+  const hHours = Number(watch("h_hours") || 0);
+  const hRate = Number(watch("h_rate") || 0);
+  const helpersTotal = +(hHours * hRate).toFixed(2);
+
+  // Label de Vendor
   const vendorLabel = useMemo(() => {
     if (mode === "CAR") return "Vendor";
     if (mode === "GENERAL") return "Vendor";
@@ -153,6 +185,13 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
     setValue("g_subtotal", "");
     setValue("g_expense_type", "General");
     setValue("c_expense_type", "Fuel");
+
+    // Helpers
+    setValue("h_helper_name", "");
+    setValue("h_task_project", "");
+    setValue("h_hours", "");
+    setValue("h_rate", "");
+    setValue("h_paid", false);
     // no tocamos payment/receipt
   }, [hasCategory, setValue]);
 
@@ -175,20 +214,41 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
     let description = (data.description || "").trim();
     let receipt_url = data.receipt_url || "";
     let notes = (data.notes || "").trim();
+    let vendor_id =
+      data.vendor_id || data.vendor_id === 0
+        ? Number(data.vendor_id) || null
+        : null;
 
-    if (mode === "CAR") {
-      expense_type = data.c_expense_type; // Fuel | Maintenance | Other
+    if (mode === "HELPERS") {
+      // Helpers -> sin TAX, map a quantity/unit/unit_price
+      expense_type = "Helpers";
+      quantity = Number(data.h_hours) || 0;
+      unit = "hour";
+      unit_price = Number(data.h_rate) || 0;
+      gallons_miles = 0;
+      total = helpersTotal;
+      vendor_id = null; // no aplica vendor
+      // Genera description si viene vacío
+      if (!description) {
+        const name = (data.h_helper_name || "").trim();
+        const task = (data.h_task_project || "").trim();
+        description =
+          [name, task].filter(Boolean).join(" - ") || "Helpers payment";
+      }
+      // Helpers no lleva receipt obligatorio, y NO aplica TAX
+      receipt_url = "";
+    } else if (mode === "CAR") {
+      const type = data.c_expense_type; // Fuel | Maintenance | Other
+      expense_type = type;
 
-      if (expense_type === "Fuel") {
-        // Gallons * Unit Price
+      if (type === "Fuel") {
         quantity = gallons || 0;
         unit = "gallon";
         unit_price = cUnitPrice || 0;
         gallons_miles = gallons || 0;
         total = carFuelTotal;
-        description = "Fuel";
-      } else if (expense_type === "Maintenance") {
-        // Price (unit_price) * 1
+        if (!description) description = "Fuel";
+      } else if (type === "Maintenance") {
         quantity = 1;
         unit = "unit";
         unit_price = cUnitPrice || 0;
@@ -196,7 +256,6 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
         total = carMaintTotal;
         // description viene del input
       } else {
-        // Other - similar a General (Subtotal libre)
         expense_type = "Other";
         quantity = 1;
         unit = "unit";
@@ -205,7 +264,6 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
         total = cOtherTotal;
       }
     } else if (mode === "GENERAL" || mode === "OTHER") {
-      // General Expenses
       expense_type = data.g_expense_type || "General";
       quantity = 1;
       unit = "unit";
@@ -216,7 +274,6 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
       receipt_url = "";
       notes = "";
     } else if (mode === "SUPPLIES") {
-      // Supplies: qty * unit_price
       expense_type = "Supplies";
       quantity = sQty || 0;
       unit = "unit";
@@ -228,10 +285,13 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
       notes = "";
     }
 
+    // Helpers: forzar sin TAX
+    const apply_tax_final = mode === "HELPERS" ? false : tax_applied;
+
     const payload = {
       date: data.date,
       category_id: data.category_id ? Number(data.category_id) : null,
-      vendor_id: data.vendor_id ? Number(data.vendor_id) : null,
+      vendor_id,
 
       description,
       notes,
@@ -242,13 +302,18 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
       unit_price,
       gallons_miles,
 
-      apply_tax: tax_applied,
+      apply_tax: apply_tax_final,
 
       payment_method,
       payment_account_id,
       receipt_url,
 
       total,
+      // Si decides guardar el flag pagado en backend:
+      paid: mode === "HELPERS" ? !!data.h_paid : undefined,
+      // Y datos crudos para auditoría si ayudas a mapearlos en el backend
+      helper_name: mode === "HELPERS" ? data.h_helper_name : undefined,
+      task_project: mode === "HELPERS" ? data.h_task_project : undefined,
     };
 
     console.log(
@@ -261,13 +326,13 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
     reset({
       date: getValues("date"),
       category_id: getValues("category_id"),
-      vendor_id: getValues("vendor_id"),
+      vendor_id: mode === "HELPERS" ? "" : getValues("vendor_id"),
       payment_method: "",
       payment_account_id: "",
       receipt_url: "",
       description: "",
       notes: "",
-      apply_tax: tax_applied,
+      apply_tax: mode === "HELPERS" ? false : apply_tax,
 
       s_quantity: "",
       s_unit_price: "",
@@ -279,21 +344,26 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
 
       g_subtotal: "",
       g_expense_type: "General",
+
+      h_helper_name: "",
+      h_task_project: "",
+      h_hours: "",
+      h_rate: "",
+      h_paid: false,
     });
   };
 
   // === UI helpers (secciones por orden exacto) ===
+  const handleCancel = () => {
+    reset(makeDefaults());
+  };
+
   const SectionHeader = () => (
     <>
       {/* Category */}
       <div className="col-12 col-md-3">
         <label className="form-label">Category</label>
-        <select
-          className="form-select"
-          {...register("category_id", {
-            setValueAs: (v) => (v === "" ? null : Number(v)),
-          })}
-        >
+        <select className="form-select" {...register("category_id")}>
           <option value="">— Select —</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
@@ -375,6 +445,7 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
           <option value="">— Optional —</option>
           <option value="CASH">Cash</option>
           <option value="CARD">Card</option>
+          <option value="BANK">Bank</option>
         </select>
       </div>
 
@@ -388,9 +459,7 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
         </label>
         <select
           className="form-select"
-          {...register("payment_account_id", {
-            setValueAs: (v) => (v === "" ? null : Number(v)),
-          })}
+          {...register("payment_account_id")}
           disabled={!paymentMethod || isLoadingAccounts}
         >
           <option value="">— Optional —</option>
@@ -437,6 +506,117 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
       {/* Header + Category */}
       <SectionHeader />
 
+      {/* === HELPERS === */}
+      {hasCategory && mode === "HELPERS" && (
+        <>
+          {/* Date */}
+          <div className="col-12 col-md-3">
+            <label className="form-label">Date</label>
+            <input
+              type="date"
+              className="form-control"
+              {...register("date", { required: true })}
+            />
+          </div>
+
+          {/* Helper Name */}
+          <div className="col-12 col-md-3">
+            <label className="form-label">Helper Name</label>
+            <input
+              className="form-control"
+              {...register("h_helper_name", { required: true })}
+            />
+            {errors.h_helper_name && (
+              <div className="text-danger small">Required</div>
+            )}
+          </div>
+
+          {/* Task/Project */}
+          <div className="col-12 col-md-3">
+            <label className="form-label">Task/Project</label>
+            <input
+              className="form-control"
+              {...register("h_task_project")}
+              placeholder="House Cleaning, Move-out…"
+            />
+          </div>
+
+          {/* Hours */}
+          <div className="col-12 col-md-3">
+            <label className="form-label">Hours Worked</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              className="form-control"
+              {...register("h_hours")}
+              placeholder="0.00"
+            />
+          </div>
+
+          {/* Rate */}
+          <div className="col-12 col-md-3">
+            <label className="form-label">Hourly Rate</label>
+            <div className="input-group">
+              <span className="input-group-text">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="form-control"
+                {...register("h_rate")}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          {/* Total (sin TAX) */}
+          <div className="col-12 col-md-3">
+            <label className="form-label">Total Paid</label>
+            <div className="input-group">
+              <span className="input-group-text">$</span>
+              <input
+                className="form-control fw-bold"
+                value={helpersTotal || ""}
+                readOnly
+              />
+            </div>
+          </div>
+
+          {/* Paid? */}
+          <div className="col-12 col-md-3 d-flex align-items-end">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="paidCheck"
+                {...register("h_paid")}
+              />
+              <label className="form-check-label" htmlFor="paidCheck">
+                Paid?
+              </label>
+            </div>
+          </div>
+
+          {/* Notes (periodo) */}
+          <div className="col-12">
+            <label className="form-label">Notes</label>
+            <input
+              className="form-control"
+              placeholder="Worked 2025-09-29 to 2025-10-03"
+              {...register("notes")}
+            />
+          </div>
+
+          {/* Pagos (sin Receipt en Helpers) */}
+          <CommonPayments
+            includeReceiptAndNotes={false}
+            paymentAccounts={paymentAccounts}
+            isLoadingAccounts={isLoadingAccounts}
+          />
+        </>
+      )}
+
       {hasCategory && mode === "CAR" && (
         <>
           {/* Expense Type (dropdown) */}
@@ -462,12 +642,7 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
           {/* Vendor */}
           <div className="col-12 col-md-3">
             <label className="form-label">{vendorLabel}</label>
-            <select
-              className="form-select"
-              {...register("vendor_id", {
-                setValueAs: (v) => (v === "" ? null : Number(v)),
-              })}
-            >
+            <select className="form-select" {...register("vendor_id")}>
               <option value="">— Optional —</option>
               {vendors.map((v) => (
                 <option key={v.id} value={v.id}>
@@ -485,7 +660,7 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
                 <label className="form-label">Gallons</label>
                 <input
                   type="number"
-                  step="0.01"
+                  step="0.001"
                   min="0"
                   className="form-control"
                   {...register("gallons_miles")}
@@ -500,7 +675,7 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
                   <span className="input-group-text">$</span>
                   <input
                     type="number"
-                    step="0.01"
+                    step="0.001"
                     min="0"
                     className={`form-control ${
                       errors.c_unit_price ? "is-invalid" : ""
@@ -809,11 +984,19 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
       {hasCategory && (
         <div className="col-12 d-flex gap-2">
           <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
             className="btn btn-primary"
             disabled={isSubmitting || !hasCategory}
           >
             <i className="bi bi-plus-circle me-2" />
-            {isSubmitting ? "Guardando..." : "Guardar gasto"}
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
         </div>
       )}

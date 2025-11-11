@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-const TYPES = ["CASH", "DEBIT", "CREDIT", "BANK", "ZELLE", "CHECK", "OTHER"];
+const TYPES = ["CASH", "DEBIT", "CREDIT", "BANK"];
 
 export default function PaymentAccountForm({
   initialValues,
