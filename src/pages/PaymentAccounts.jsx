@@ -72,30 +72,40 @@ export default function PaymentAccounts() {
 
       {mode === "list" && (
         <div className="table-responsive">
-          <table className="table table-striped align-middle">
+          <table className="table table-striped table-sm align-middle">
             <thead>
               <tr>
-                <th style={{ width: 60 }}>#</th>
+                <th style={{ width: 50 }}>#</th>
                 <th>Name</th>
-                <th>Type</th>
-                <th>Provider</th>
-                <th>Last4</th>
+                {/* Ocultamos Type en pantallas muy pequeñas */}
+                <th className="d-none d-sm-table-cell">Type</th>
+                {/* Ocultamos Provider en pantallas pequeñas */}
+                <th className="d-none d-md-table-cell">Provider</th>
+                <th className="d-none d-sm-table-cell">Last4</th>
                 <th>Status</th>
-                <th style={{ width: 200 }}></th>
+                <th className="text-end" style={{ width: 140 }}>
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((row, idx) => (
                 <tr key={row.id}>
                   <td>{idx + 1}</td>
-                  <td>{row.name}</td>
-                  <td>
+                  <td className="text-nowrap">{row.name}</td>
+
+                  <td className="d-none d-sm-table-cell">
                     <span className="badge text-bg-secondary">{row.type}</span>
                   </td>
-                  <td>
+
+                  <td className="d-none d-md-table-cell">
                     {row.provider || <span className="text-muted">—</span>}
                   </td>
-                  <td>{row.last4 || <span className="text-muted">—</span>}</td>
+
+                  <td className="d-none d-sm-table-cell">
+                    {row.last4 || <span className="text-muted">—</span>}
+                  </td>
+
                   <td>
                     {row.is_active ? (
                       <span className="badge text-bg-success">Active</span>
@@ -103,16 +113,17 @@ export default function PaymentAccounts() {
                       <span className="badge text-bg-secondary">Disabled</span>
                     )}
                   </td>
+
                   <td className="text-end">
-                    <div className="btn-group">
+                    <div className="btn-group btn-group-sm">
                       <button
-                        className="btn btn-sm btn-primary"
+                        className="btn btn-primary"
                         onClick={() => startEdit(row)}
                       >
                         Edit
                       </button>
                       <button
-                        className="btn btn-sm btn-outline-danger"
+                        className="btn btn-outline-danger"
                         onClick={() => onDelete(row)}
                       >
                         Delete
@@ -121,9 +132,11 @@ export default function PaymentAccounts() {
                   </td>
                 </tr>
               ))}
+
               {sorted.length === 0 && !isLoading && (
                 <tr>
-                  <td colSpan={8} className="text-center text-muted">
+                  {/* ⬅️ ahora 7 columnas, no 8 */}
+                  <td colSpan={7} className="text-center text-muted">
                     No accounts yet
                   </td>
                 </tr>
