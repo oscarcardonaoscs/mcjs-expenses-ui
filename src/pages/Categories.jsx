@@ -45,12 +45,14 @@ export default function Categories() {
   const onDelete = async (row) => {
     if (confirm(`Delete category "${row.name}"?`)) {
       await deleteMut.mutateAsync(row.id);
+      if (selected?.id === row.id) cancel();
     }
   };
 
   return (
-    <div className="container py-3">
-      <div className="border-bottom pb-3 mb-4 d-flex align-items-center justify-content-between">
+    <div className="px-0 mt-3">
+      {/* Header alineado igual que Expenses */}
+      <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
         <h2 className="m-0">Categories</h2>
         {mode === "list" && (
           <button className="btn btn-success" onClick={startCreate}>
@@ -66,12 +68,14 @@ export default function Categories() {
 
       {mode === "list" && (
         <div className="table-responsive">
-          <table className="table table-striped align-middle">
+          <table className="table table-striped table-sm align-middle w-100">
             <thead>
               <tr>
-                <th style={{ width: 60 }}>#</th>
+                <th style={{ width: 50 }}>#</th>
                 <th>Name</th>
-                <th style={{ width: 160 }}></th>
+                <th className="text-end" style={{ width: 140 }}>
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -80,15 +84,15 @@ export default function Categories() {
                   <td>{idx + 1}</td>
                   <td>{row.name}</td>
                   <td className="text-end">
-                    <div className="btn-group">
+                    <div className="btn-group btn-group-sm">
                       <button
-                        className="btn btn-sm btn-primary"
+                        className="btn btn-primary"
                         onClick={() => startEdit(row)}
                       >
                         Edit
                       </button>
                       <button
-                        className="btn btn-sm btn-outline-danger"
+                        className="btn btn-outline-danger"
                         onClick={() => onDelete(row)}
                       >
                         Delete

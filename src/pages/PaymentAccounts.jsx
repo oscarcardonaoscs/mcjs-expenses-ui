@@ -55,8 +55,9 @@ export default function PaymentAccounts() {
   };
 
   return (
-    <div className="container py-3">
-      <div className="border-bottom pb-3 mb-4 d-flex align-items-center justify-content-between">
+    <div className="px-0 mt-3">
+      {/* Header alineado igual que las demás vistas */}
+      <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
         <h2 className="m-0">Payment Accounts</h2>
         {mode === "list" && (
           <button className="btn btn-success" onClick={startCreate}>
@@ -72,7 +73,7 @@ export default function PaymentAccounts() {
 
       {mode === "list" && (
         <div className="table-responsive">
-          <table className="table table-striped table-sm align-middle">
+          <table className="table table-striped table-sm align-middle w-100">
             <thead>
               <tr>
                 <th style={{ width: 50 }}>#</th>
@@ -135,7 +136,6 @@ export default function PaymentAccounts() {
 
               {sorted.length === 0 && !isLoading && (
                 <tr>
-                  {/* ⬅️ ahora 7 columnas, no 8 */}
                   <td colSpan={7} className="text-center text-muted">
                     No accounts yet
                   </td>

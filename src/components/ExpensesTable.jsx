@@ -36,7 +36,7 @@ export function ExpensesTable({ items = [] }) {
 
   return (
     <div className="table-responsive">
-      <table className="table table-striped align-middle">
+      <table className="table table-striped table-sm align-middle w-100">
         <thead>
           <tr>
             <th>Date</th>

@@ -47,9 +47,11 @@ export default function Expenses() {
   };
 
   return (
-    <div className="container mt-4">
-      <div className="border-bottom pb-3 mb-4 d-flex align-items-center justify-content-between">
+    <div className="px-0 mt-3">
+      {/* Header con paddings suaves */}
+      <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
         <h1 className="h3 m-0">Expenses</h1>
+
         {mode === "list" && (
           <button className="btn btn-success" onClick={startCreate}>
             New Expense
@@ -57,27 +59,32 @@ export default function Expenses() {
         )}
       </div>
 
-      {mode === "create" ? (
-        <ExpenseForm
-          onSubmit={handleSubmit}
-          isSubmitting={isPending}
-          onCancel={cancelCreate}
-        />
-      ) : isLoading ? (
-        <div className="text-center py-4">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Cargando...</span>
+      {/* Contenido real - full width sin padding */}
+      <div className="px-0">
+        {mode === "create" ? (
+          <ExpenseForm
+            onSubmit={handleSubmit}
+            isSubmitting={isPending}
+            onCancel={cancelCreate}
+          />
+        ) : isLoading ? (
+          <div className="text-center py-4">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </div>
           </div>
-        </div>
-      ) : isError ? (
-        <div className="alert alert-danger" role="alert">
-          Error al cargar gastos: {error?.message ?? "Intenta de nuevo"}
-        </div>
-      ) : data.length === 0 ? (
-        <p className="text-muted">No hay gastos registrados aún.</p>
-      ) : (
-        <ExpensesTable items={data} />
-      )}
+        ) : isError ? (
+          <div className="alert alert-danger m-3" role="alert">
+            Error al cargar gastos: {error?.message ?? "Intenta de nuevo"}
+          </div>
+        ) : data.length === 0 ? (
+          <p className="text-muted px-3">No hay gastos registrados aún.</p>
+        ) : (
+          <div className="px-0">
+            <ExpensesTable items={data} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
