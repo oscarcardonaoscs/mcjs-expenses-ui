@@ -26,6 +26,18 @@ export function useVendors() {
   });
 }
 
+// ---------- Expenses ----------
+export function useExpenses() {
+  return useQuery({
+    queryKey: ["expenses"],
+    queryFn: async () => {
+      const { data } = await api.get("/expenses");
+      return data?.items ?? [];
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
 // ---------- Payment Accounts ----------
 export function usePaymentAccounts() {
   return useQuery({
