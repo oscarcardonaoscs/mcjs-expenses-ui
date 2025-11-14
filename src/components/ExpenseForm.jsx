@@ -812,9 +812,10 @@ export default function ExpenseForm({ onSubmit: submit, isSubmitting }) {
             <label className="form-label">Expense Type</label>
             <select className="form-select" {...register("g_expense_type")}>
               <option>General</option>
+              <option>Insurance</option>
               <option>Utilities</option>
               <option>Service</option>
-              <option>Office</option>
+              <option>Marketing</option>
               <option>Other</option>
             </select>
           </div>
