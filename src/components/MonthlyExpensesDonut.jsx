@@ -1,6 +1,13 @@
 // src/components/MonthlyExpensesDonut.jsx
 import { useMemo, useState } from "react";
-import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { useExpenses } from "@/api/hooks";
 import { formatCurrency } from "@/lib/format";
 
@@ -123,7 +130,7 @@ export default function MonthlyExpensesDonut() {
   const hasData = chartData.length > 0;
 
   return (
-    <div className="w-full h-80 border rounded-lg bg-white shadow-sm p-4 flex flex-col">
+    <div className="w-full border rounded-lg bg-white shadow-sm p-4">
       {/* Header con título + selects de mes/año */}
       <div className="flex items-center justify-between mb-2 gap-2">
         <div>
@@ -153,7 +160,6 @@ export default function MonthlyExpensesDonut() {
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
           >
-            {/* Si no hay years detectados, mostramos al menos el año actual */}
             {(availableYears.length ? availableYears : [now.getFullYear()]).map(
               (y) => (
                 <option key={y} value={y}>
@@ -166,33 +172,40 @@ export default function MonthlyExpensesDonut() {
       </div>
 
       {/* Gráfica */}
-      <div className="flex-1 relative flex items-center justify-center">
+      <div
+        className="relative mt-2"
+        style={{ width: "100%", height: 260, minWidth: 0 }}
+      >
         {hasData ? (
           <>
-            <PieChart width={320} height={260}>
-              <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
-              <Legend
-                verticalAlign="bottom"
-                wrapperStyle={{ fontSize: "0.75rem" }}
-              />
-              <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={70}
-                outerRadius={110}
-                paddingAngle={2}
-                stroke="#ffffff"
-                strokeWidth={1}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Tooltip
+                  formatter={(value) => `$${Number(value).toFixed(2)}`}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  wrapperStyle={{ fontSize: "0.75rem" }}
+                />
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={70}
+                  outerRadius={110}
+                  paddingAngle={2}
+                  stroke="#ffffff"
+                  strokeWidth={1}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
 
             {/* Total en el centro */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -205,7 +218,7 @@ export default function MonthlyExpensesDonut() {
             </div>
           </>
         ) : (
-          <div className="text-xs text-gray-400 text-center px-4">
+          <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 text-center px-4">
             No expenses found for this month.
           </div>
         )}

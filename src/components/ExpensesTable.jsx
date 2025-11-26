@@ -1,76 +1,103 @@
-export function ExpensesTable({ items = [] }) {
-  const fmtMoney = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
+// src/components/ExpensesTable.jsx
+import { formatCurrency, formatDateMDY } from "@/lib/format";
 
-  const fmtDate = (iso = "") => {
-    // iso llega como "YYYY-MM-DD"
-    const [y, m, d] = (iso || "").split("-");
-    if (!y || !m || !d) return iso || "-";
-    return `${m}/${d}/${y}`; // MM/DD/YYYY
-  };
+function formatPayment(method, last4) {
+  if (!method) return "";
+  if (!last4) return method; // CASH, ZELLE, etc.
+  return `${method} ${last4}`;
+}
 
-  const prettyPayment = (code) => {
-    if (!code) return "-";
-    const map = {
-      CASH: "Cash",
-      CARD: "Card",
-      ZELLE: "Zelle",
-      VENMO: "Venmo",
-      CASHAPP: "Cash App",
-      CHECK: "Check",
-      BANK: "Bank",
-      OTHER: "Other",
-    };
-    return map[code] || code;
-  };
-
-  // Intenta detectar el campo de últimos 4 dígitos que venga del backend
-  const getLast4 = (e) =>
-    e.payment_account_last4 ||
-    e.payment_last4 ||
-    e.last4 ||
-    (e.payment_account && e.payment_account.last4) ||
-    null;
-
+export function ExpensesTable({ items }) {
   return (
-    <div className="table-responsive">
-      <table className="table table-striped table-sm align-middle w-100">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Type</th>
-            <th>Vendor</th>
-            <th className="text-end">Total</th>
-            <th>Payment</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((e) => {
-            const method = e.payment_method;
-            const last4 = getLast4(e);
-            const showLast4 = (method === "CARD" || method === "BANK") && last4;
-
-            return (
+    <>
+      {/* ========= Versión DESKTOP (md en adelante) ========= */}
+      <div className="table-responsive d-none d-md-block">
+        <table className="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Type</th>
+              <th>Vendor</th>
+              <th className="text-end">Subtotal</th>
+              <th className="text-end">Tax</th>
+              <th className="text-end">Total</th>
+              <th>Payment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((e) => (
               <tr key={e.id}>
-                <td>{fmtDate(e.date)}</td>
-                <td>{e.category?.name ?? "-"}</td>
-                <td>{e.expense_type ?? "-"}</td>
-                <td>{e.vendor?.name ?? "-"}</td>
-                <td className="text-end">{fmtMoney.format(e.total ?? 0)}</td>
+                <td>{formatDateMDY(e.date)}</td>
+                <td>{e.category?.name}</td>
+                <td>{e.expense_type}</td>
+                <td>{e.vendor?.name}</td>
+                <td className="text-end">{formatCurrency(e.subtotal)}</td>
+                <td className="text-end">
+                  {e.tax ? formatCurrency(e.tax) : "-"}
+                </td>
+                <td className="text-end">{formatCurrency(e.total)}</td>
                 <td>
-                  <div>{prettyPayment(method)}</div>
-                  {showLast4 && (
-                    <div className="text-muted small">{`**${last4}`}</div>
+                  {e.payment_method}
+                  {e.payment_account_last4 && (
+                    <div className="small text-muted">
+                      **{e.payment_account_last4}
+                    </div>
                   )}
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ========= Versión MOBILE (solo 4 columnas) ========= */}
+      <div className="table-responsive d-md-none">
+        <table className="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Item</th>
+              <th className="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((e) => (
+              <tr key={e.id}>
+                {/* Date */}
+                <td>{formatDateMDY(e.date)}</td>
+                {/* Category + Type en dos renglones */}
+                <td>
+                  <div>{e.category?.name}</div>
+                  {e.expense_type && (
+                    <div className="small text-muted">{e.expense_type}</div>
+                  )}
+                </td>
+
+                {/* Item = Description + Vendor en dos renglones */}
+                <td>
+                  <div>{e.description}</div>
+
+                  {e.vendor?.name && (
+                    <div className="small text-muted">{e.vendor.name}</div>
+                  )}
+                </td>
+
+                {/* Total + Payment en dos renglones */}
+                <td className="text-end">
+                  <div>{formatCurrency(e.total)}</div>
+                  {e.payment_method && (
+                    <div className="small text-muted">
+                      {formatPayment(e.payment_method, e.payment_account_last4)}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

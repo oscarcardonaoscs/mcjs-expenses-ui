@@ -10,3 +10,9 @@ export function formatCurrency(value) {
   if (isNaN(num)) return "$0.00";
   return fmtCurrency.format(num);
 }
+
+export function formatDateMDY(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US"); // → MM/DD/YYYY
+}
