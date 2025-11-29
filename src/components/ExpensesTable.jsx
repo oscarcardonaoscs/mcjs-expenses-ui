@@ -19,9 +19,8 @@ export function ExpensesTable({ items }) {
               <th>Category</th>
               <th>Type</th>
               <th>Vendor</th>
-              <th className="text-end">Subtotal</th>
-              <th className="text-end">Tax</th>
-              <th className="text-end">Total</th>
+              <th>Description</th>
+              <th>Total</th>
               <th>Payment</th>
             </tr>
           </thead>
@@ -32,12 +31,9 @@ export function ExpensesTable({ items }) {
                 <td>{e.category?.name}</td>
                 <td>{e.expense_type}</td>
                 <td>{e.vendor?.name}</td>
-                <td className="text-end">{formatCurrency(e.subtotal)}</td>
-                <td className="text-end">
-                  {e.tax ? formatCurrency(e.tax) : "-"}
-                </td>
-                <td className="text-end">{formatCurrency(e.total)}</td>
-                <td>
+                <td>{e.description}</td>
+                <td className="text-end pe-4">{formatCurrency(e.total)}</td>
+                <td className="ps-3">
                   {e.payment_method}
                   {e.payment_account_last4 && (
                     <div className="small text-muted">

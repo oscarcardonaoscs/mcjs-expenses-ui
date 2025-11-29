@@ -1,22 +1,22 @@
-// src/pages/Dashboard.jsx
 import MonthlyExpensesDonut from "@/components/MonthlyExpensesDonut";
+import AnnualExpensesByCategoryBar from "@/components/AnnualExpensesByCategoryBar";
 
 export default function Dashboard() {
   return (
     <div className="p-4 space-y-4">
-      {/* Encabezado */}
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
         <p className="text-sm text-gray-600">Welcome to MCJ Expenses!</p>
       </div>
 
-      {/* Contenido principal */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Donut: gastos del mes por categoría */}
+      {/* Main content */}
+      <div className="grid md:grid-cols-2 gap-4">
         <MonthlyExpensesDonut />
 
-        {/* Aquí luego podemos agregar otra tarjeta/gráfica */}
-        {/* <AnotherWidget /> */}
+        <div className="my-6">
+          <AnnualExpensesByCategoryBar />
+        </div>
       </div>
     </div>
   );

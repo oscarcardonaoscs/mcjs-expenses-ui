@@ -82,3 +82,16 @@ export function useDeletePaymentAccount() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["payment-accounts"] }),
   });
 }
+
+export function useAnnualExpensesByCategory(year) {
+  return useQuery({
+    queryKey: ["annual-expenses-by-category", year],
+    queryFn: async () => {
+      const { data } = await api.get("/reports/annual-expenses-by-category", {
+        params: { year },
+      });
+      return data; // { year, items: [...] }
+    },
+    enabled: !!year,
+  });
+}

@@ -125,7 +125,7 @@ export default function Expenses() {
 
         {mode === "list" && (
           <button className="btn btn-success" onClick={startCreate}>
-            New Expense
+            Add
           </button>
         )}
       </div>
