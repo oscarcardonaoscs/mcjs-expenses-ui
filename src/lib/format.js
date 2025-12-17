@@ -11,8 +11,8 @@ export function formatCurrency(value) {
   return fmtCurrency.format(num);
 }
 
-export function formatDateMDY(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US"); // → MM/DD/YYYY
+export function formatDateMDY(ymd) {
+  if (!ymd) return "";
+  const [y, m, d] = ymd.split("-");
+  return `${m}/${d}/${y}`;
 }
