@@ -12,6 +12,10 @@ import Expenses from "./pages/Expenses.jsx";
 import Categories from "./pages/Categories.jsx";
 import Vendors from "./pages/Vendors.jsx";
 import PaymentAccounts from "./pages/PaymentAccounts.jsx";
+import HelpersPage from "./pages/helpers/HelpersPage.jsx";
+import HelperTimeEntriesPage from "./pages/helpers/HelperTimeEntriesPage.jsx";
+import HelperPayrollPeriodsPage from "./pages/helpers/HelperPayrollPeriodsPage.jsx";
+import ClientsPage from "./pages/ClientsPage.jsx";
 import Login from "./pages/Login.jsx";
 import "./index.css";
 
@@ -27,6 +31,10 @@ const router = createBrowserRouter([
       { path: "categories", element: <Categories /> },
       { path: "vendors", element: <Vendors /> },
       { path: "payment-accounts", element: <PaymentAccounts /> },
+      { path: "helpers", element: <HelpersPage /> },
+      { path: "helper-time-entries", element: <HelperTimeEntriesPage /> },
+      { path: "helper-payroll-periods", element: <HelperPayrollPeriodsPage /> },
+      { path: "clients", element: <ClientsPage /> },
       { path: "login", element: <Login /> },
       // opcional: si quieres que /dashboard también funcione
       { path: "dashboard", element: <Dashboard /> },
@@ -39,5 +47,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <QueryClientProvider client={qc}>
       <RouterProvider router={router} />
     </QueryClientProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

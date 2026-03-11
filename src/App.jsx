@@ -14,17 +14,48 @@ function SidebarLinksDesktop() {
       <NavLink className={linkCls} to="/" end>
         Dashboard
       </NavLink>
+      <hr className="sidebar-divider my-2" />
+
+      <div className="sidebar-heading">Catalogs</div>
+
+      <NavLink className={linkCls} to="/clients">
+        Clients
+      </NavLink>
+      <hr className="sidebar-divider my-2" />
+      {/* Finance */}
+      <div className="sidebar-heading">Finance</div>
+
       <NavLink className={linkCls} to="/expenses">
         Expenses
       </NavLink>
+
       <NavLink className={linkCls} to="/categories">
         Categories
       </NavLink>
+
       <NavLink className={linkCls} to="/vendors">
         Vendors
       </NavLink>
+
       <NavLink className={linkCls} to="/payment-accounts">
         Payment Accounts
+      </NavLink>
+
+      <hr className="sidebar-divider my-2" />
+
+      {/* Payroll */}
+      <div className="sidebar-heading">Payroll</div>
+
+      <NavLink className={linkCls} to="/helpers">
+        Helpers
+      </NavLink>
+
+      <NavLink className={linkCls} to="/helper-time-entries">
+        Helper Time Entries
+      </NavLink>
+
+      <NavLink className={linkCls} to="/helper-payroll-periods">
+        Helper Payroll Periods
       </NavLink>
     </nav>
   );
@@ -43,13 +74,13 @@ function SidebarLinksOffcanvas({ pendingRef }) {
     (location.pathname === to ? " fw-semibold text-primary" : "");
 
   const makeHandler = (to) => (e) => {
-    e.preventDefault(); // evitar navegación inmediata
-    pendingRef.current = to; // guardar destino
-    // El cierre lo hace Bootstrap por el data-attribute
+    e.preventDefault();
+    pendingRef.current = to;
   };
 
   return (
     <nav className="nav flex-column gap-2">
+      {/* Dashboard */}
       <a
         href="/"
         className={linkCls("/")}
@@ -58,6 +89,24 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Dashboard
       </a>
+      <div className="mt-3 mb-1 small text-uppercase text-muted fw-bold">
+        Catalogs
+      </div>
+
+      <a
+        href="/clients"
+        className={linkCls("/clients")}
+        data-bs-dismiss="offcanvas"
+        onClick={makeHandler("/clients")}
+      >
+        Clients
+      </a>
+      <hr className="my-2" />
+      {/* Finance Section */}
+      <div className="mb-1 small text-uppercase text-muted fw-bold">
+        Finance
+      </div>
+
       <a
         href="/expenses"
         className={linkCls("/expenses")}
@@ -66,6 +115,7 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Expenses
       </a>
+
       <a
         href="/categories"
         className={linkCls("/categories")}
@@ -74,6 +124,7 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Categories
       </a>
+
       <a
         href="/vendors"
         className={linkCls("/vendors")}
@@ -82,6 +133,7 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Vendors
       </a>
+
       <a
         href="/payment-accounts"
         className={linkCls("/payment-accounts")}
@@ -89,6 +141,41 @@ function SidebarLinksOffcanvas({ pendingRef }) {
         onClick={makeHandler("/payment-accounts")}
       >
         Payment Accounts
+      </a>
+
+      {/* Divider */}
+      <hr className="my-2" />
+
+      {/* Payroll Section */}
+      <div className="mb-1 small text-uppercase text-muted fw-bold">
+        Payroll
+      </div>
+
+      <a
+        href="/helpers"
+        className={linkCls("/helpers")}
+        data-bs-dismiss="offcanvas"
+        onClick={makeHandler("/helpers")}
+      >
+        Helpers
+      </a>
+
+      <a
+        href="/helper-time-entries"
+        className={linkCls("/helper-time-entries")}
+        data-bs-dismiss="offcanvas"
+        onClick={makeHandler("/helper-time-entries")}
+      >
+        Helper Time Entries
+      </a>
+
+      <a
+        href="/helper-payroll-periods"
+        className={linkCls("/helper-payroll-periods")}
+        data-bs-dismiss="offcanvas"
+        onClick={makeHandler("/helper-payroll-periods")}
+      >
+        Helper Payroll Periods
       </a>
     </nav>
   );
@@ -101,10 +188,8 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Aquí guardamos el destino al que se quiere navegar
   const pendingPathRef = useRef(null);
 
-  // Escuchar CUANDO el offcanvas termina de cerrarse -> navegar
   useEffect(() => {
     const el = document.getElementById("appSidebar");
     if (!el) return;
@@ -119,7 +204,6 @@ export default function App() {
     return () => el.removeEventListener("hidden.bs.offcanvas", onHidden);
   }, [navigate]);
 
-  // Cerrar offcanvas si cambias de ruta por otra vía y limpiar pending
   useEffect(() => {
     pendingPathRef.current = null;
     const el = document.getElementById("appSidebar");
@@ -129,7 +213,6 @@ export default function App() {
 
   return (
     <div className="min-vh-100 d-flex">
-      {/* Aside fijo (>= md) */}
       <aside
         className="border-end d-none d-md-flex flex-column"
         style={{ width: 240 }}
@@ -147,10 +230,8 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-grow-1 d-flex flex-column">
         <header className="navbar bg-white border-bottom py-2 px-3 d-flex align-items-center gap-2">
-          {/* Apertura con data-API de Bootstrap */}
           <button
             className="navbar-toggler d-md-none"
             type="button"
@@ -169,7 +250,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* Offcanvas móvil */}
       <div
         className="offcanvas offcanvas-start d-md-none"
         tabIndex="-1"
@@ -188,7 +268,6 @@ export default function App() {
           />
         </div>
         <div className="offcanvas-body">
-          {/* Enlaces móviles: guardan destino y cierran; navegamos en "hidden" */}
           <SidebarLinksOffcanvas pendingRef={pendingPathRef} />
         </div>
       </div>

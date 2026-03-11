@@ -1,0 +1,170 @@
+import { useEffect, useState } from "react";
+
+const initialFormData = {
+  first_name: "",
+  last_name: "",
+  phone: "",
+  email: "",
+  notes: "",
+  is_active: true,
+};
+
+function HelperForm({ initialData, onSubmit, onCancel, loading }) {
+  const [formData, setFormData] = useState(initialFormData);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        first_name: initialData.first_name || "",
+        last_name: initialData.last_name || "",
+        phone: initialData.phone || "",
+        email: initialData.email || "",
+        notes: initialData.notes || "",
+        is_active:
+          typeof initialData.is_active === "boolean"
+            ? initialData.is_active
+            : true,
+      });
+    } else {
+      setFormData(initialFormData);
+    }
+  }, [initialData]);
+
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <div className="card shadow-sm mb-4">
+      <div className="card-header py-3">
+        <h6 className="m-0 fw-bold text-primary">
+          {initialData ? "Edit Helper" : "New Helper"}
+        </h6>
+      </div>
+
+      <div className="card-body">
+        <form onSubmit={handleSubmit}>
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label htmlFor="first_name" className="form-label">
+                First Name
+              </label>
+              <input
+                id="first_name"
+                type="text"
+                name="first_name"
+                className="form-control"
+                value={formData.first_name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="col-md-6 mb-3">
+              <label htmlFor="last_name" className="form-label">
+                Last Name
+              </label>
+              <input
+                id="last_name"
+                type="text"
+                name="last_name"
+                className="form-control"
+                value={formData.last_name}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="col-md-6 mb-3">
+              <label htmlFor="phone" className="form-label">
+                Phone
+              </label>
+              <input
+                id="phone"
+                type="text"
+                name="phone"
+                className="form-control"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="col-md-6 mb-3">
+              <label htmlFor="email" className="form-label">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                className="form-control"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="col-md-6 mb-3 d-flex align-items-center">
+              <div className="form-check mt-4">
+                <input
+                  type="checkbox"
+                  name="is_active"
+                  id="is_active"
+                  className="form-check-input"
+                  checked={formData.is_active}
+                  onChange={handleChange}
+                />
+                <label htmlFor="is_active" className="form-check-label">
+                  Active
+                </label>
+              </div>
+            </div>
+
+            <div className="col-12 mb-3">
+              <label htmlFor="notes" className="form-label">
+                Notes
+              </label>
+              <textarea
+                id="notes"
+                name="notes"
+                className="form-control"
+                rows="3"
+                value={formData.notes}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div className="d-flex gap-2">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save"}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default HelperForm;
