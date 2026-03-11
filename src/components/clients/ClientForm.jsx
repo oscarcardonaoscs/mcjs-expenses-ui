@@ -51,10 +51,17 @@ function ClientForm({
 
     setError("");
 
-    await onSubmit({
-      name: trimmedName,
-      is_active: formData.is_active,
-    });
+    try {
+      await onSubmit({
+        name: trimmedName,
+        is_active: formData.is_active,
+      });
+    } catch (err) {
+      const message =
+        err?.response?.data?.detail || err?.message || "Failed to save client.";
+
+      setError(message);
+    }
   };
 
   return (
