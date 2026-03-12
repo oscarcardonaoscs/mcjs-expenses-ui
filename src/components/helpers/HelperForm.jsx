@@ -5,6 +5,8 @@ const initialFormData = {
   last_name: "",
   phone: "",
   email: "",
+  default_work_rate: "",
+  default_travel_rate: "",
   notes: "",
   is_active: true,
 };
@@ -19,6 +21,8 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
         last_name: initialData.last_name || "",
         phone: initialData.phone || "",
         email: initialData.email || "",
+        default_work_rate: initialData.default_work_rate ?? "",
+        default_travel_rate: initialData.default_travel_rate ?? "",
         notes: initialData.notes || "",
         is_active:
           typeof initialData.is_active === "boolean"
@@ -41,7 +45,17 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onSubmit(formData);
+    onSubmit({
+      ...formData,
+      default_work_rate:
+        formData.default_work_rate === ""
+          ? null
+          : Number(formData.default_work_rate),
+      default_travel_rate:
+        formData.default_travel_rate === ""
+          ? null
+          : Number(formData.default_travel_rate),
+    });
   };
 
   return (
@@ -109,6 +123,40 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                 className="form-control"
                 value={formData.email}
                 onChange={handleChange}
+              />
+            </div>
+
+            <div className="col-md-6 mb-3">
+              <label htmlFor="default_work_rate" className="form-label">
+                Default Work Rate
+              </label>
+              <input
+                id="default_work_rate"
+                type="number"
+                name="default_work_rate"
+                className="form-control"
+                value={formData.default_work_rate}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
+                placeholder="e.g. 15.00"
+              />
+            </div>
+
+            <div className="col-md-6 mb-3">
+              <label htmlFor="default_travel_rate" className="form-label">
+                Default Travel Rate
+              </label>
+              <input
+                id="default_travel_rate"
+                type="number"
+                name="default_travel_rate"
+                className="form-control"
+                value={formData.default_travel_rate}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
+                placeholder="e.g. 7.25"
               />
             </div>
 
