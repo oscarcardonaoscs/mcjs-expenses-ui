@@ -81,7 +81,7 @@ function ClientForm({
 
         <form onSubmit={handleSubmit}>
           <div className="row g-3">
-            <div className="col-md-8">
+            <div className="col-12 col-md-8">
               <label htmlFor="client-name" className="form-label">
                 Client Name
               </label>
@@ -98,8 +98,8 @@ function ClientForm({
               />
             </div>
 
-            <div className="col-md-4 d-flex align-items-end">
-              <div className="form-check mb-2">
+            <div className="col-12 col-md-4 d-flex align-items-md-end">
+              <div className="form-check mt-2 mt-md-0">
                 <input
                   id="client-is-active"
                   type="checkbox"
@@ -116,7 +116,7 @@ function ClientForm({
             </div>
           </div>
 
-          <div className="d-flex gap-2 mt-4">
+          <div className="d-flex flex-column flex-sm-row gap-2 mt-4">
             <button
               type="submit"
               className="btn btn-primary"

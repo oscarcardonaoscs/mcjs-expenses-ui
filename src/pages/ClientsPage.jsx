@@ -38,6 +38,7 @@ function ClientsPage() {
     setEditingClient(null);
     setShowForm(true);
     setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleEdit = (client) => {
@@ -94,19 +95,29 @@ function ClientsPage() {
 
   return (
     <div className="container-fluid">
-      <div className="d-sm-flex align-items-center justify-content-between mb-4">
-        <div>
-          <h1 className="h3 mb-0 text-gray-800">Clients</h1>
-          <p className="mb-0 text-muted">
-            Manage the client catalog used for helper time entries.
-          </p>
-        </div>
+      <div className="card shadow mb-4">
+        <div className="card-body">
+          <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div>
+              <h1 className="h3 mb-1 text-gray-800">Clients</h1>
+              <p className="mb-0 text-muted">
+                Manage the client catalog used for helper time entries.
+              </p>
+            </div>
 
-        {!showForm ? (
-          <button type="button" className="btn btn-primary" onClick={handleNew}>
-            Add Client
-          </button>
-        ) : null}
+            {!showForm ? (
+              <div className="w-100 w-md-auto">
+                <button
+                  type="button"
+                  className="btn btn-primary w-100"
+                  onClick={handleNew}
+                >
+                  Add Client
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       {error ? (

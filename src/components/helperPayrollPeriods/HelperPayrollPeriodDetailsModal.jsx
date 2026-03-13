@@ -142,8 +142,9 @@ function HelperPayrollPeriodDetailsModal({
                         {formatCurrency(payroll.travel_amount)}
                       </p>
                       <p className="mb-0">
-                        <strong>Total Pay:</strong>{" "}
-                        {formatCurrency(payroll.total_amount)}
+                        <strong>
+                          Total Pay: {formatCurrency(payroll.total_amount)}
+                        </strong>
                       </p>
                     </div>
                   </div>
