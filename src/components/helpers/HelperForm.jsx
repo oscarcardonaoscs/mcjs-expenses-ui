@@ -45,6 +45,7 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
     onSubmit({
       ...formData,
       default_work_rate:
@@ -68,8 +69,8 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
 
       <div className="card-body">
         <form onSubmit={handleSubmit}>
-          <div className="row">
-            <div className="col-md-6 mb-3">
+          <div className="row g-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="first_name" className="form-label">
                 First Name
               </label>
@@ -81,10 +82,11 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                 value={formData.first_name}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="last_name" className="form-label">
                 Last Name
               </label>
@@ -95,10 +97,11 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                 className="form-control"
                 value={formData.last_name}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="phone" className="form-label">
                 Phone
               </label>
@@ -109,10 +112,11 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                 className="form-control"
                 value={formData.phone}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="email" className="form-label">
                 Email
               </label>
@@ -123,10 +127,11 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                 className="form-control"
                 value={formData.email}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="default_work_rate" className="form-label">
                 Default Work Rate
               </label>
@@ -140,10 +145,11 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                 min="0"
                 step="0.01"
                 placeholder="e.g. 15.00"
+                disabled={loading}
               />
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="default_travel_rate" className="form-label">
                 Default Travel Rate
               </label>
@@ -157,11 +163,12 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                 min="0"
                 step="0.01"
                 placeholder="e.g. 7.25"
+                disabled={loading}
               />
             </div>
 
-            <div className="col-md-6 mb-3 d-flex align-items-center">
-              <div className="form-check mt-4">
+            <div className="col-12 col-md-6 d-flex align-items-md-end">
+              <div className="form-check mt-2 mt-md-0">
                 <input
                   type="checkbox"
                   name="is_active"
@@ -169,6 +176,7 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                   className="form-check-input"
                   checked={formData.is_active}
                   onChange={handleChange}
+                  disabled={loading}
                 />
                 <label htmlFor="is_active" className="form-check-label">
                   Active
@@ -176,7 +184,7 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
               </div>
             </div>
 
-            <div className="col-12 mb-3">
+            <div className="col-12">
               <label htmlFor="notes" className="form-label">
                 Notes
               </label>
@@ -187,17 +195,22 @@ function HelperForm({ initialData, onSubmit, onCancel, loading }) {
                 rows="3"
                 value={formData.notes}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
           </div>
 
-          <div className="d-flex gap-2">
+          <div className="d-flex flex-column flex-sm-row gap-2 mt-4">
             <button
               type="submit"
               className="btn btn-primary"
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading
+                ? "Saving..."
+                : initialData
+                  ? "Update Helper"
+                  : "Save Helper"}
             </button>
 
             <button

@@ -38,12 +38,14 @@ function HelpersPage() {
     setEditingHelper(null);
     setShowForm(true);
     setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleEdit = (helper) => {
     setEditingHelper(helper);
     setShowForm(true);
     setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleCancel = () => {
@@ -101,14 +103,29 @@ function HelpersPage() {
 
   return (
     <div className="container-fluid py-3">
-      <div className="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-4">
-        <h1 className="h3 mb-0">Helpers</h1>
+      <div className="card shadow-sm mb-4">
+        <div className="card-body">
+          <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div>
+              <h1 className="h3 mb-1">Helpers</h1>
+              <p className="text-muted mb-0">
+                Manage helpers and their default rates.
+              </p>
+            </div>
 
-        {!showForm && (
-          <button type="button" className="btn btn-primary" onClick={handleNew}>
-            New Helper
-          </button>
-        )}
+            {!showForm && (
+              <div className="w-100 w-md-auto">
+                <button
+                  type="button"
+                  className="btn btn-primary w-100"
+                  onClick={handleNew}
+                >
+                  New Helper
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {error && (
