@@ -69,10 +69,16 @@ function HelperPayrollPeriodDetailsModal({
 }) {
   if (!show || !payroll) return null;
 
+  const hasEntries =
+    Array.isArray(payroll.time_entries) && payroll.time_entries.length > 0;
+
   return (
     <>
       <div className="modal fade show d-block" tabIndex="-1" role="dialog">
-        <div className="modal-dialog modal-xl" role="document">
+        <div
+          className="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down modal-xl"
+          role="document"
+        >
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Payroll Period Details</h5>
@@ -81,71 +87,129 @@ function HelperPayrollPeriodDetailsModal({
                 type="button"
                 className="btn-close"
                 onClick={onClose}
-              ></button>
+                aria-label="Close"
+              />
             </div>
 
             <div className="modal-body">
-              <div className="row">
-                <div className="col-md-6 mb-3">
+              <div className="row g-3 mb-4">
+                <div className="col-12 col-lg-6">
                   <div className="card h-100 shadow-sm">
                     <div className="card-header py-3">
                       <h6 className="m-0 fw-bold text-primary">Period Info</h6>
                     </div>
+
                     <div className="card-body">
-                      <p className="mb-2">
-                        <strong>Helper:</strong> {getHelperName(payroll)}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Start Date:</strong>{" "}
-                        {formatDate(payroll.period_start)}
-                      </p>
-                      <p className="mb-2">
-                        <strong>End Date:</strong>{" "}
-                        {formatDate(payroll.period_end)}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Pay Date:</strong>{" "}
-                        {formatDate(payroll.pay_date)}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Status:</strong> {payroll.status || "-"}
-                      </p>
-                      <p className="mb-0">
-                        <strong>Notes:</strong> {payroll.notes || "-"}
-                      </p>
+                      <div className="row g-3">
+                        <div className="col-12 col-sm-6">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Helper</div>
+                            <div className="fw-semibold">
+                              {getHelperName(payroll)}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-12 col-sm-6">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Status</div>
+                            <div className="fw-semibold">
+                              {payroll.status || "-"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-12 col-sm-6">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Start Date</div>
+                            <div>{formatDate(payroll.period_start)}</div>
+                          </div>
+                        </div>
+
+                        <div className="col-12 col-sm-6">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">End Date</div>
+                            <div>{formatDate(payroll.period_end)}</div>
+                          </div>
+                        </div>
+
+                        <div className="col-12">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Pay Date</div>
+                            <div>{formatDate(payroll.pay_date)}</div>
+                          </div>
+                        </div>
+
+                        <div className="col-12">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Notes</div>
+                            <div>{payroll.notes || "-"}</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="col-md-6 mb-3">
+                <div className="col-12 col-lg-6">
                   <div className="card h-100 shadow-sm">
                     <div className="card-header py-3">
                       <h6 className="m-0 fw-bold text-primary">
                         Payroll Summary
                       </h6>
                     </div>
+
                     <div className="card-body">
-                      <p className="mb-2">
-                        <strong>Work Hours:</strong>{" "}
-                        {formatHoursFromMinutes(payroll.total_work_minutes)}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Travel Hours:</strong>{" "}
-                        {formatHoursFromMinutes(payroll.total_travel_minutes)}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Work Pay:</strong>{" "}
-                        {formatCurrency(payroll.work_amount)}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Travel Pay:</strong>{" "}
-                        {formatCurrency(payroll.travel_amount)}
-                      </p>
-                      <p className="mb-0">
-                        <strong>
-                          Total Pay: {formatCurrency(payroll.total_amount)}
-                        </strong>
-                      </p>
+                      <div className="row g-3">
+                        <div className="col-6">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Work Hours</div>
+                            <div className="fw-semibold">
+                              {formatHoursFromMinutes(
+                                payroll.total_work_minutes,
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-6">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Travel Hours</div>
+                            <div className="fw-semibold">
+                              {formatHoursFromMinutes(
+                                payroll.total_travel_minutes,
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-6">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Work Pay</div>
+                            <div className="fw-semibold">
+                              {formatCurrency(payroll.work_amount)}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-6">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Travel Pay</div>
+                            <div className="fw-semibold">
+                              {formatCurrency(payroll.travel_amount)}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-12">
+                          <div className="border rounded p-3 h-100 bg-light">
+                            <div className="small text-muted">Total Pay</div>
+                            <div className="fw-bold fs-5">
+                              {formatCurrency(payroll.total_amount)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -157,52 +221,108 @@ function HelperPayrollPeriodDetailsModal({
                 </div>
 
                 <div className="card-body">
-                  <div className="table-responsive">
-                    <table className="table table-bordered table-sm mb-0">
-                      <thead className="table-light">
-                        <tr>
-                          <th>Date</th>
-                          <th>Client</th>
-                          <th>Start Time</th>
-                          <th>End Time</th>
-                          <th>Duration</th>
-                          <th>Travel Time</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {!Array.isArray(payroll.time_entries) ||
-                        payroll.time_entries.length === 0 ? (
-                          <tr>
-                            <td colSpan="6" className="text-center">
-                              No time entries linked to this payroll period.
-                            </td>
-                          </tr>
-                        ) : (
-                          payroll.time_entries.map((entry) => (
-                            <tr key={entry.id}>
-                              <td>{formatDate(entry.work_date)}</td>
-                              <td>{entry.client_name || "-"}</td>
-                              <td>{formatTime(entry.start_time)}</td>
-                              <td>{formatTime(entry.end_time)}</td>
-                              <td>
-                                {formatDurationFromMinutes(entry.work_minutes)}
-                              </td>
-                              <td>
-                                {formatDurationFromMinutes(
-                                  entry.travel_minutes,
-                                )}
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                  {!hasEntries ? (
+                    <div className="text-muted">
+                      No time entries linked to this payroll period.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="d-block d-md-none">
+                        <div className="d-flex flex-column gap-3">
+                          {payroll.time_entries.map((entry) => (
+                            <div
+                              key={entry.id}
+                              className="border rounded p-3 shadow-sm"
+                            >
+                              <div className="fw-bold mb-1">
+                                {formatDate(entry.work_date)}
+                              </div>
+
+                              <div className="text-muted small mb-3">
+                                {entry.client_name || "-"}
+                              </div>
+
+                              <div className="row g-2">
+                                <div className="col-6">
+                                  <div className="small text-muted">Start</div>
+                                  <div>{formatTime(entry.start_time)}</div>
+                                </div>
+
+                                <div className="col-6">
+                                  <div className="small text-muted">End</div>
+                                  <div>{formatTime(entry.end_time)}</div>
+                                </div>
+
+                                <div className="col-6">
+                                  <div className="small text-muted">
+                                    Duration
+                                  </div>
+                                  <div>
+                                    {formatDurationFromMinutes(
+                                      entry.work_minutes,
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="col-6">
+                                  <div className="small text-muted">
+                                    Travel Time
+                                  </div>
+                                  <div>
+                                    {formatDurationFromMinutes(
+                                      entry.travel_minutes,
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="d-none d-md-block">
+                        <div className="table-responsive">
+                          <table className="table table-bordered table-sm mb-0">
+                            <thead className="table-light">
+                              <tr>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Duration</th>
+                                <th>Travel Time</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {payroll.time_entries.map((entry) => (
+                                <tr key={entry.id}>
+                                  <td>{formatDate(entry.work_date)}</td>
+                                  <td>{entry.client_name || "-"}</td>
+                                  <td>{formatTime(entry.start_time)}</td>
+                                  <td>{formatTime(entry.end_time)}</td>
+                                  <td>
+                                    {formatDurationFromMinutes(
+                                      entry.work_minutes,
+                                    )}
+                                  </td>
+                                  <td>
+                                    {formatDurationFromMinutes(
+                                      entry.travel_minutes,
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="modal-footer">
+            <div className="modal-footer d-flex flex-column flex-sm-row gap-2">
               <button
                 type="button"
                 className="btn btn-secondary"

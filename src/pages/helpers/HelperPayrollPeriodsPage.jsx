@@ -34,7 +34,6 @@ function HelperPayrollPeriodsPage() {
 
   useEffect(() => {
     loadHelpers();
-    loadPayrollPeriods();
   }, []);
 
   useEffect(() => {
@@ -83,6 +82,7 @@ function HelperPayrollPeriodsPage() {
     setShowForm(true);
     setSuccessMessage("");
     setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleEdit = async (payroll) => {
@@ -96,6 +96,7 @@ function HelperPayrollPeriodsPage() {
       setSelectedPayroll(fullPayroll);
       setFormMode("edit");
       setShowForm(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err.message || "Failed to load payroll period.");
     } finally {
@@ -201,18 +202,28 @@ function HelperPayrollPeriodsPage() {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 className="h3 mb-0 text-gray-800">Helper Payroll Periods</h1>
+    <div className="container-fluid py-3">
+      <div className="card shadow-sm mb-4">
+        <div className="card-body">
+          <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div>
+              <h1 className="h3 mb-1 text-gray-800">Helper Payroll Periods</h1>
+              <p className="text-muted mb-0">
+                Generate, review, and manage helper payroll periods.
+              </p>
+            </div>
 
-        <button
-          type="button"
-          className="btn btn-primary shadow-sm"
-          onClick={handleNew}
-        >
-          <i className="fas fa-plus fa-sm text-white-50 me-2" />
-          New Payroll Period
-        </button>
+            <div className="w-100 w-md-auto">
+              <button
+                type="button"
+                className="btn btn-primary w-100"
+                onClick={handleNew}
+              >
+                New Payroll Period
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {error && (
@@ -227,14 +238,14 @@ function HelperPayrollPeriodsPage() {
         </div>
       )}
 
-      <div className="card shadow mb-4">
+      <div className="card shadow-sm mb-4">
         <div className="card-header py-3">
           <h6 className="m-0 fw-bold text-primary">Filters</h6>
         </div>
 
         <div className="card-body">
-          <div className="row">
-            <div className="mb-3 col-md-4">
+          <div className="row g-3">
+            <div className="col-12 col-md-4">
               <label htmlFor="helper_id" className="form-label">
                 Helper
               </label>
@@ -256,7 +267,7 @@ function HelperPayrollPeriodsPage() {
               </select>
             </div>
 
-            <div className="mb-3 col-md-4">
+            <div className="col-12 col-md-4">
               <label htmlFor="status" className="form-label">
                 Status
               </label>

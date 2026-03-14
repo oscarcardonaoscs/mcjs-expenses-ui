@@ -143,7 +143,10 @@ function HelperPayrollPeriodForm({
   return (
     <>
       <div className="modal fade show d-block" tabIndex="-1" role="dialog">
-        <div className="modal-dialog modal-xl" role="document">
+        <div
+          className="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down modal-xl"
+          role="document"
+        >
           <div className="modal-content">
             <form onSubmit={handleSubmit}>
               <div className="modal-header">
@@ -163,32 +166,32 @@ function HelperPayrollPeriodForm({
               </div>
 
               <div className="modal-body">
-                <div className="mb-3">
-                  <label htmlFor="helper_id" className="form-label">
-                    Helper *
-                  </label>
-                  <select
-                    id="helper_id"
-                    name="helper_id"
-                    className="form-select"
-                    value={formData.helper_id}
-                    onChange={handleChange}
-                    disabled={formLoading || mode === "edit"}
-                    required
-                  >
-                    <option value="">Select a helper</option>
-                    {helpers.map((helper) => (
-                      <option key={helper.id} value={helper.id}>
-                        {[helper.first_name, helper.last_name]
-                          .filter(Boolean)
-                          .join(" ")}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <div className="row g-3">
+                  <div className="col-12">
+                    <label htmlFor="helper_id" className="form-label">
+                      Helper *
+                    </label>
+                    <select
+                      id="helper_id"
+                      name="helper_id"
+                      className="form-select"
+                      value={formData.helper_id}
+                      onChange={handleChange}
+                      disabled={formLoading || mode === "edit"}
+                      required
+                    >
+                      <option value="">Select a helper</option>
+                      {helpers.map((helper) => (
+                        <option key={helper.id} value={helper.id}>
+                          {[helper.first_name, helper.last_name]
+                            .filter(Boolean)
+                            .join(" ")}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div className="row">
-                  <div className="mb-3 col-md-4">
+                  <div className="col-12 col-md-4">
                     <label htmlFor="period_start" className="form-label">
                       Start Date *
                     </label>
@@ -204,7 +207,7 @@ function HelperPayrollPeriodForm({
                     />
                   </div>
 
-                  <div className="mb-3 col-md-4">
+                  <div className="col-12 col-md-4">
                     <label htmlFor="period_end" className="form-label">
                       End Date *
                     </label>
@@ -220,7 +223,7 @@ function HelperPayrollPeriodForm({
                     />
                   </div>
 
-                  <div className="mb-3 col-md-4">
+                  <div className="col-12 col-md-4">
                     <label htmlFor="pay_date" className="form-label">
                       Pay Date
                     </label>
@@ -234,11 +237,9 @@ function HelperPayrollPeriodForm({
                       disabled={formLoading}
                     />
                   </div>
-                </div>
 
-                {mode === "edit" && (
-                  <div className="row">
-                    <div className="mb-3 col-md-6">
+                  {mode === "edit" && (
+                    <div className="col-12 col-md-6">
                       <label htmlFor="status" className="form-label">
                         Status
                       </label>
@@ -250,38 +251,77 @@ function HelperPayrollPeriodForm({
                         onChange={handleChange}
                         disabled={formLoading}
                       >
-                        <option value="open">Open</option>
-                        <option value="ready">Ready</option>
+                        <option value="draft">Draft</option>
+                        <option value="calculated">Calculated</option>
+                        <option value="approved">Approved</option>
                         <option value="paid">Paid</option>
-                        <option value="cancelled">Cancelled</option>
                       </select>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {mode === "edit" && (
+                    <div className="col-12">
+                      <label htmlFor="notes" className="form-label">
+                        Notes
+                      </label>
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        className="form-control"
+                        rows="3"
+                        value={formData.notes}
+                        onChange={handleChange}
+                        disabled={formLoading}
+                        placeholder="Optional notes"
+                      />
+                    </div>
+                  )}
+                </div>
 
                 {summary && (
-                  <div className="card border-info shadow-sm mb-3">
+                  <div className="card border-info shadow-sm mt-4">
                     <div className="card-body">
                       <h6 className="fw-bold text-info mb-3">
                         Payroll Summary
                       </h6>
 
-                      <div className="row">
-                        <div className="col-md-3 mb-2">
-                          <strong>Total Entries:</strong>{" "}
-                          {summary.total_entries}
+                      <div className="row g-3">
+                        <div className="col-6 col-md-3">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">
+                              Total Entries
+                            </div>
+                            <div className="fw-bold">
+                              {summary.total_entries}
+                            </div>
+                          </div>
                         </div>
-                        <div className="col-md-3 mb-2">
-                          <strong>Work Hours:</strong>{" "}
-                          {summary.total_work_hours}
+
+                        <div className="col-6 col-md-3">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Work Hours</div>
+                            <div className="fw-bold">
+                              {summary.total_work_hours}
+                            </div>
+                          </div>
                         </div>
-                        <div className="col-md-3 mb-2">
-                          <strong>Travel Hours:</strong>{" "}
-                          {summary.total_travel_hours}
+
+                        <div className="col-6 col-md-3">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Travel Hours</div>
+                            <div className="fw-bold">
+                              {summary.total_travel_hours}
+                            </div>
+                          </div>
                         </div>
-                        <div className="col-md-3 mb-2">
-                          <strong>Total Pay:</strong>{" "}
-                          {formatCurrency(summary.total_pay)}
+
+                        <div className="col-6 col-md-3">
+                          <div className="border rounded p-3 h-100">
+                            <div className="small text-muted">Total Pay</div>
+                            <div className="fw-bold">
+                              {formatCurrency(summary.total_pay)}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -291,7 +331,7 @@ function HelperPayrollPeriodForm({
                 {mode === "edit" &&
                   Array.isArray(payroll?.time_entries) &&
                   payroll.time_entries.length > 0 && (
-                    <div className="card shadow-sm">
+                    <div className="card shadow-sm mt-4">
                       <div className="card-header py-3">
                         <h6 className="m-0 fw-bold text-primary">
                           Time Entries
@@ -299,46 +339,87 @@ function HelperPayrollPeriodForm({
                       </div>
 
                       <div className="card-body">
-                        <div className="table-responsive">
-                          <table className="table table-bordered table-sm mb-0">
-                            <thead className="table-light">
-                              <tr>
-                                <th>Date</th>
-                                <th>Client</th>
-                                <th>Start Time</th>
-                                <th>End Time</th>
-                                <th>Duration</th>
-                                <th>Travel Time</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {payroll.time_entries.map((entry) => (
-                                <tr key={entry.id}>
-                                  <td>{normalizeDate(entry.work_date)}</td>
-                                  <td>{entry.client_name || "-"}</td>
-                                  <td>{formatTime(entry.start_time)}</td>
-                                  <td>{formatTime(entry.end_time)}</td>
-                                  <td>
-                                    {formatDurationFromMinutes(
-                                      entry.work_minutes,
-                                    )}
-                                  </td>
-                                  <td>
-                                    {formatDurationFromMinutes(
-                                      entry.travel_minutes,
-                                    )}
-                                  </td>
+                        <div className="d-block d-md-none">
+                          <div className="d-flex flex-column gap-3">
+                            {payroll.time_entries.map((entry) => (
+                              <div
+                                key={entry.id}
+                                className="border rounded p-3 shadow-sm"
+                              >
+                                <div className="fw-bold mb-1">
+                                  {normalizeDate(entry.work_date)}
+                                </div>
+                                <div className="text-muted small mb-2">
+                                  {entry.client_name || "-"}
+                                </div>
+
+                                <div className="small mb-1">
+                                  <strong>Start:</strong>{" "}
+                                  {formatTime(entry.start_time)}
+                                </div>
+                                <div className="small mb-1">
+                                  <strong>End:</strong>{" "}
+                                  {formatTime(entry.end_time)}
+                                </div>
+                                <div className="small mb-1">
+                                  <strong>Duration:</strong>{" "}
+                                  {formatDurationFromMinutes(
+                                    entry.work_minutes,
+                                  )}
+                                </div>
+                                <div className="small">
+                                  <strong>Travel:</strong>{" "}
+                                  {formatDurationFromMinutes(
+                                    entry.travel_minutes,
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="d-none d-md-block">
+                          <div className="table-responsive">
+                            <table className="table table-bordered table-sm mb-0">
+                              <thead className="table-light">
+                                <tr>
+                                  <th>Date</th>
+                                  <th>Client</th>
+                                  <th>Start Time</th>
+                                  <th>End Time</th>
+                                  <th>Duration</th>
+                                  <th>Travel Time</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {payroll.time_entries.map((entry) => (
+                                  <tr key={entry.id}>
+                                    <td>{normalizeDate(entry.work_date)}</td>
+                                    <td>{entry.client_name || "-"}</td>
+                                    <td>{formatTime(entry.start_time)}</td>
+                                    <td>{formatTime(entry.end_time)}</td>
+                                    <td>
+                                      {formatDurationFromMinutes(
+                                        entry.work_minutes,
+                                      )}
+                                    </td>
+                                    <td>
+                                      {formatDurationFromMinutes(
+                                        entry.travel_minutes,
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                       </div>
                     </div>
                   )}
               </div>
 
-              <div className="modal-footer">
+              <div className="modal-footer d-flex flex-column flex-sm-row gap-2">
                 <button
                   type="button"
                   className="btn btn-secondary"
