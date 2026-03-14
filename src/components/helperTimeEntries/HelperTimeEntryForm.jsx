@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const defaultFormData = {
   helper_id: "",
@@ -8,6 +8,45 @@ const defaultFormData = {
   end_time: "",
   notes: "",
 };
+
+function formatDuration(startTime, endTime) {
+  if (!startTime || !endTime) {
+    return "";
+  }
+
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [endHour, endMinute] = endTime.split(":").map(Number);
+
+  if (
+    Number.isNaN(startHour) ||
+    Number.isNaN(startMinute) ||
+    Number.isNaN(endHour) ||
+    Number.isNaN(endMinute)
+  ) {
+    return "";
+  }
+
+  const startTotalMinutes = startHour * 60 + startMinute;
+  const endTotalMinutes = endHour * 60 + endMinute;
+
+  if (endTotalMinutes <= startTotalMinutes) {
+    return "";
+  }
+
+  const diff = endTotalMinutes - startTotalMinutes;
+  const hours = Math.floor(diff / 60);
+  const minutes = diff % 60;
+
+  if (hours > 0 && minutes > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  if (hours > 0) {
+    return `${hours}h`;
+  }
+
+  return `${minutes}m`;
+}
 
 function HelperTimeEntryForm({
   helpers = [],
@@ -36,6 +75,11 @@ function HelperTimeEntryForm({
 
     setError("");
   }, [initialData]);
+
+  const duration = useMemo(
+    () => formatDuration(formData.start_time, formData.end_time),
+    [formData.start_time, formData.end_time],
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -99,12 +143,16 @@ function HelperTimeEntryForm({
     try {
       await onSubmit(payload);
     } catch (err) {
-      setError(err.message || "Failed to save time entry.");
+      setError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          "Failed to save time entry.",
+      );
     }
   };
 
   return (
-    <div className="card shadow mb-4">
+    <div className="card shadow-sm mb-4">
       <div className="card-header py-3">
         <h6 className="m-0 fw-bold text-primary">
           {initialData ? "Edit Time Entry" : "New Time Entry"}
@@ -119,8 +167,8 @@ function HelperTimeEntryForm({
         ) : null}
 
         <form onSubmit={handleSubmit}>
-          <div className="row">
-            <div className="col-md-6 mb-3">
+          <div className="row g-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="helper_id" className="form-label">
                 Helper
               </label>
@@ -143,7 +191,7 @@ function HelperTimeEntryForm({
               </select>
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="work_date" className="form-label">
                 Work Date
               </label>
@@ -158,7 +206,7 @@ function HelperTimeEntryForm({
               />
             </div>
 
-            <div className="col-12 mb-3">
+            <div className="col-12">
               <label htmlFor="client_id" className="form-label">
                 Client
               </label>
@@ -179,7 +227,7 @@ function HelperTimeEntryForm({
               </select>
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="start_time" className="form-label">
                 Start Time
               </label>
@@ -194,7 +242,7 @@ function HelperTimeEntryForm({
               />
             </div>
 
-            <div className="col-md-6 mb-3">
+            <div className="col-12 col-md-6">
               <label htmlFor="end_time" className="form-label">
                 End Time
               </label>
@@ -209,7 +257,15 @@ function HelperTimeEntryForm({
               />
             </div>
 
-            <div className="col-12 mb-3">
+            {(formData.start_time || formData.end_time) && (
+              <div className="col-12">
+                <div className="alert alert-light border mb-0" role="alert">
+                  <strong>Duration:</strong> {duration || "-"}
+                </div>
+              </div>
+            )}
+
+            <div className="col-12">
               <label htmlFor="notes" className="form-label">
                 Notes
               </label>
@@ -226,13 +282,17 @@ function HelperTimeEntryForm({
             </div>
           </div>
 
-          <div className="d-flex gap-2">
+          <div className="d-flex flex-column flex-sm-row gap-2 mt-4">
             <button
               type="submit"
               className="btn btn-primary"
               disabled={loading}
             >
-              {loading ? "Saving..." : initialData ? "Update" : "Save"}
+              {loading
+                ? "Saving..."
+                : initialData
+                  ? "Update Time Entry"
+                  : "Save Entry"}
             </button>
 
             <button
