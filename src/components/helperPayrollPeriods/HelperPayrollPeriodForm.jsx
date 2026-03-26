@@ -66,7 +66,7 @@ function HelperPayrollPeriodForm({
     period_end: "",
     pay_date: "",
     notes: "",
-    status: "draft",
+    status: "Open",
   });
 
   useEffect(() => {
@@ -79,7 +79,7 @@ function HelperPayrollPeriodForm({
         period_end: normalizeDate(payroll.period_end),
         pay_date: normalizeDate(payroll.pay_date),
         notes: payroll.notes || "",
-        status: payroll.status ? String(payroll.status).toLowerCase() : "draft",
+        status: payroll.status || "Open",
       });
     } else {
       setFormData({
@@ -125,7 +125,7 @@ function HelperPayrollPeriodForm({
         period_end: formData.period_end,
         pay_date: formData.pay_date || null,
         notes: formData.notes || null,
-        status: formData.status || "draft",
+        status: formData.status || "Open",
       });
       return;
     }
@@ -165,7 +165,10 @@ function HelperPayrollPeriodForm({
                 />
               </div>
 
-              <div className="modal-body">
+              <div
+                className="modal-body"
+                style={{ maxHeight: "70vh", overflowY: "auto" }}
+              >
                 <div className="row g-3">
                   <div className="col-12">
                     <label htmlFor="helper_id" className="form-label">
@@ -251,10 +254,9 @@ function HelperPayrollPeriodForm({
                         onChange={handleChange}
                         disabled={formLoading}
                       >
-                        <option value="draft">Draft</option>
-                        <option value="calculated">Calculated</option>
-                        <option value="approved">Approved</option>
-                        <option value="paid">Paid</option>
+                        <option value="Open">Open</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Cancelled">Cancelled</option>
                       </select>
                     </div>
                   )}
@@ -379,7 +381,10 @@ function HelperPayrollPeriodForm({
                         </div>
 
                         <div className="d-none d-md-block">
-                          <div className="table-responsive">
+                          <div
+                            className="table-responsive"
+                            style={{ maxHeight: "300px", overflowY: "auto" }}
+                          >
                             <table className="table table-bordered table-sm mb-0">
                               <thead className="table-light">
                                 <tr>
