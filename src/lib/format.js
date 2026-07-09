@@ -16,3 +16,13 @@ export function formatDateMDY(ymd) {
   const [y, m, d] = ymd.split("-");
   return `${m}/${d}/${y}`;
 }
+
+export function parseLocalDate(ymd) {
+  if (!ymd) return null;
+
+  const [y, m, d] = ymd.split("-").map(Number);
+
+  if (!y || !m || !d) return null;
+
+  return new Date(y, m - 1, d);
+}

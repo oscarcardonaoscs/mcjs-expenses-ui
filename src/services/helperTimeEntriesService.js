@@ -1,6 +1,7 @@
 import API_BASE_URL from "./api";
 
 const HELPER_TIME_ENTRIES_URL = `${API_BASE_URL}/helper-time-entries`;
+const HELPER_WORK_EVENTS_URL = `${API_BASE_URL}/helper-work-events`;
 
 async function handleResponse(response) {
   let data = null;
@@ -12,16 +13,22 @@ async function handleResponse(response) {
   }
 
   if (!response.ok) {
+    const detail = data?.detail;
+
     const message =
-      data?.detail ||
-      data?.message ||
-      `Request failed with status ${response.status}`;
+      typeof detail === "string"
+        ? detail
+        : data?.message || `Request failed with status ${response.status}`;
 
     throw new Error(message);
   }
 
   return data;
 }
+
+// ---------------------------------------------------------
+// TIME ENTRIES LIST
+// ---------------------------------------------------------
 
 export async function getHelperTimeEntries() {
   const response = await fetch(`${HELPER_TIME_ENTRIES_URL}/`, {
@@ -31,8 +38,12 @@ export async function getHelperTimeEntries() {
   return handleResponse(response);
 }
 
+// ---------------------------------------------------------
+// WORK EVENTS
+// ---------------------------------------------------------
+
 export async function createHelperTimeEntry(payload) {
-  const response = await fetch(`${HELPER_TIME_ENTRIES_URL}/`, {
+  const response = await fetch(`${HELPER_WORK_EVENTS_URL}/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -43,8 +54,16 @@ export async function createHelperTimeEntry(payload) {
   return handleResponse(response);
 }
 
-export async function updateHelperTimeEntry(id, payload) {
-  const response = await fetch(`${HELPER_TIME_ENTRIES_URL}/${id}`, {
+export async function getHelperWorkEvent(id) {
+  const response = await fetch(`${HELPER_WORK_EVENTS_URL}/${id}`, {
+    method: "GET",
+  });
+
+  return handleResponse(response);
+}
+
+export async function updateHelperWorkEvent(id, payload) {
+  const response = await fetch(`${HELPER_WORK_EVENTS_URL}/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -54,6 +73,10 @@ export async function updateHelperTimeEntry(id, payload) {
 
   return handleResponse(response);
 }
+
+// ---------------------------------------------------------
+// TIME ENTRY DELETE
+// ---------------------------------------------------------
 
 export async function deleteHelperTimeEntry(id) {
   const response = await fetch(`${HELPER_TIME_ENTRIES_URL}/${id}`, {

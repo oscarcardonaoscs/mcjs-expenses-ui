@@ -16,6 +16,9 @@ import HelpersPage from "./pages/helpers/HelpersPage.jsx";
 import HelperTimeEntriesPage from "./pages/helpers/HelperTimeEntriesPage.jsx";
 import HelperPayrollPeriodsPage from "./pages/helpers/HelperPayrollPeriodsPage.jsx";
 import ClientsPage from "./pages/ClientsPage.jsx";
+import ClientLocationsPage from "./pages/ClientLocationsPage.jsx";
+import ClientLocationFormPage from "./pages/ClientLocationFormPage.jsx";
+
 import Login from "./pages/Login.jsx";
 import "./index.css";
 
@@ -35,6 +38,16 @@ const router = createBrowserRouter([
       { path: "helper-time-entries", element: <HelperTimeEntriesPage /> },
       { path: "helper-payroll-periods", element: <HelperPayrollPeriodsPage /> },
       { path: "clients", element: <ClientsPage /> },
+      { path: "clients/:clientId/locations", element: <ClientLocationsPage /> },
+      {
+        path: "clients/:clientId/locations/new",
+        element: <ClientLocationFormPage />,
+      },
+      {
+        path: "clients/:clientId/locations/:locationId/edit",
+        element: <ClientLocationFormPage />,
+      },
+
       { path: "login", element: <Login /> },
       // opcional: si quieres que /dashboard también funcione
       { path: "dashboard", element: <Dashboard /> },

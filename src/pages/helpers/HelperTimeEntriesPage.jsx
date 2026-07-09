@@ -6,7 +6,8 @@ import { getClients } from "../../services/clientsService";
 import {
   getHelperTimeEntries,
   createHelperTimeEntry,
-  updateHelperTimeEntry,
+  getHelperWorkEvent,
+  updateHelperWorkEvent,
   deleteHelperTimeEntry,
 } from "../../services/helperTimeEntriesService";
 
@@ -52,11 +53,29 @@ function HelperTimeEntriesPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleEdit = (entry) => {
-    setEditingEntry(entry);
-    setShowForm(true);
-    setError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleEdit = async (entry) => {
+    try {
+      setFormLoading(true);
+      setError("");
+
+      if (!entry.work_event_id) {
+        throw new Error("This time entry is not associated with a work event.");
+      }
+
+      const workEvent = await getHelperWorkEvent(entry.work_event_id);
+
+      setEditingEntry(workEvent);
+      setShowForm(true);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    } catch (err) {
+      setError(err.message || "Failed to load work event.");
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -71,7 +90,7 @@ function HelperTimeEntriesPage() {
       setError("");
 
       if (editingEntry) {
-        await updateHelperTimeEntry(editingEntry.id, payload);
+        await updateHelperWorkEvent(editingEntry.id, payload);
       } else {
         await createHelperTimeEntry(payload);
       }

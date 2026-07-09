@@ -4,10 +4,10 @@ import { formatCurrency, formatDateMDY } from "@/lib/format";
 function formatPayment(method, last4) {
   if (!method) return "";
   if (!last4) return method; // CASH, ZELLE, etc.
-  return `${method} ${last4}`;
+  return `${method} **${last4}`;
 }
 
-export function ExpensesTable({ items }) {
+export function ExpensesTable({ items, onEdit, onDelete }) {
   return (
     <>
       {/* ========= Versión DESKTOP (md en adelante) ========= */}
@@ -20,10 +20,12 @@ export function ExpensesTable({ items }) {
               <th>Type</th>
               <th>Vendor</th>
               <th>Description</th>
-              <th>Total</th>
-              <th>Payment</th>
+              <th className="text-end pe-4">Total</th>
+              <th className="ps-3">Payment</th>
+              <th style={{ width: "150px" }}>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {items.map((e) => (
               <tr key={e.id}>
@@ -32,7 +34,9 @@ export function ExpensesTable({ items }) {
                 <td>{e.expense_type}</td>
                 <td>{e.vendor?.name}</td>
                 <td>{e.description}</td>
+
                 <td className="text-end pe-4">{formatCurrency(e.total)}</td>
+
                 <td className="ps-3">
                   {e.payment_method}
                   {e.payment_account_last4 && (
@@ -41,13 +45,33 @@ export function ExpensesTable({ items }) {
                     </div>
                   )}
                 </td>
+
+                <td>
+                  <div className="d-flex gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => onEdit(e)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => onDelete(e)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* ========= Versión MOBILE (solo 4 columnas) ========= */}
+      {/* ========= Versión MOBILE ========= */}
       <div className="table-responsive d-md-none">
         <table className="table table-sm align-middle">
           <thead>
@@ -58,12 +82,12 @@ export function ExpensesTable({ items }) {
               <th className="text-end">Total</th>
             </tr>
           </thead>
+
           <tbody>
             {items.map((e) => (
               <tr key={e.id}>
-                {/* Date */}
                 <td>{formatDateMDY(e.date)}</td>
-                {/* Category + Type en dos renglones */}
+
                 <td>
                   <div>{e.category?.name}</div>
                   {e.expense_type && (
@@ -71,18 +95,35 @@ export function ExpensesTable({ items }) {
                   )}
                 </td>
 
-                {/* Item = Description + Vendor en dos renglones */}
                 <td>
                   <div>{e.description}</div>
 
                   {e.vendor?.name && (
                     <div className="small text-muted">{e.vendor.name}</div>
                   )}
+
+                  <div className="d-flex gap-2 mt-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => onEdit(e)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => onDelete(e)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
 
-                {/* Total + Payment en dos renglones */}
                 <td className="text-end">
                   <div>{formatCurrency(e.total)}</div>
+
                   {e.payment_method && (
                     <div className="small text-muted">
                       {formatPayment(e.payment_method, e.payment_account_last4)}

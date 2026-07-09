@@ -1,4 +1,4 @@
-function formatDateTime(value) {
+function formatDate(value) {
   if (!value) return "-";
 
   const date = new Date(value);
@@ -7,10 +7,36 @@ function formatDateTime(value) {
     return "-";
   }
 
-  return date.toLocaleString();
+  return date.toLocaleDateString();
 }
 
-function ClientsTable({ clients = [], loading = false, onEdit, onDelete }) {
+function getLocationsCount(client) {
+  if (typeof client.locations_count === "number") {
+    return client.locations_count;
+  }
+
+  if (typeof client.locationsCount === "number") {
+    return client.locationsCount;
+  }
+
+  if (Array.isArray(client.locations)) {
+    return client.locations.length;
+  }
+
+  return 0;
+}
+
+function formatLocationsLabel(count) {
+  return count === 1 ? "1 location" : `${count} locations`;
+}
+
+function ClientsTable({
+  clients = [],
+  loading = false,
+  onEdit,
+  onLocations,
+  onDelete,
+}) {
   if (loading) {
     return (
       <div className="card shadow mb-4">
@@ -35,55 +61,71 @@ function ClientsTable({ clients = [], loading = false, onEdit, onDelete }) {
             {/* Mobile view */}
             <div className="d-block d-md-none">
               <div className="d-flex flex-column gap-3">
-                {clients.map((client, index) => (
-                  <div key={client.id} className="border rounded p-3 shadow-sm">
-                    <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
-                      <div>
-                        <div className="small text-muted">
-                          Client #{index + 1}
+                {clients.map((client, index) => {
+                  const locationsCount = getLocationsCount(client);
+
+                  return (
+                    <div
+                      key={client.id}
+                      className="border rounded p-3 shadow-sm"
+                    >
+                      <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+                        <div>
+                          <div className="small text-muted">
+                            Client #{index + 1}
+                          </div>
+
+                          <div className="fw-bold">{client.name}</div>
+
+                          <div className="small text-muted">
+                            {formatLocationsLabel(locationsCount)}
+                          </div>
                         </div>
-                        <div className="fw-bold">{client.name}</div>
+
+                        <span
+                          className={`badge ${
+                            client.is_active
+                              ? "text-bg-success"
+                              : "text-bg-secondary"
+                          }`}
+                        >
+                          {client.is_active ? "Active" : "Inactive"}
+                        </span>
                       </div>
 
-                      <span
-                        className={`badge ${
-                          client.is_active
-                            ? "text-bg-success"
-                            : "text-bg-secondary"
-                        }`}
-                      >
-                        {client.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </div>
+                      <div className="small text-muted mb-3">
+                        <strong>Updated:</strong>{" "}
+                        {formatDate(client.updated_at)}
+                      </div>
 
-                    <div className="small text-muted mb-1">
-                      <strong>Created:</strong>{" "}
-                      {formatDateTime(client.created_at)}
-                    </div>
-                    <div className="small text-muted mb-3">
-                      <strong>Updated:</strong>{" "}
-                      {formatDateTime(client.updated_at)}
-                    </div>
+                      <div className="d-grid gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => onEdit(client)}
+                        >
+                          Edit
+                        </button>
 
-                    <div className="d-grid gap-2">
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => onEdit(client)}
-                      >
-                        Edit
-                      </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => onLocations(client)}
+                        >
+                          Locations
+                        </button>
 
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => onDelete(client)}
-                      >
-                        Delete
-                      </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => onDelete(client)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -95,51 +137,69 @@ function ClientsTable({ clients = [], loading = false, onEdit, onDelete }) {
                     <tr>
                       <th style={{ minWidth: "70px" }}>#</th>
                       <th style={{ minWidth: "240px" }}>Name</th>
+                      <th style={{ minWidth: "140px" }}>Locations</th>
                       <th style={{ minWidth: "120px" }}>Status</th>
-                      <th style={{ minWidth: "180px" }}>Created</th>
-                      <th style={{ minWidth: "180px" }}>Updated</th>
+                      <th style={{ minWidth: "140px" }}>Updated</th>
                       <th style={{ minWidth: "180px" }}>Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {clients.map((client, index) => (
-                      <tr key={client.id}>
-                        <td>{index + 1}</td>
-                        <td>{client.name}</td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              client.is_active
-                                ? "text-bg-success"
-                                : "text-bg-secondary"
-                            }`}
-                          >
-                            {client.is_active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td>{formatDateTime(client.created_at)}</td>
-                        <td>{formatDateTime(client.updated_at)}</td>
-                        <td>
-                          <div className="d-flex gap-2 flex-wrap">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() => onEdit(client)}
-                            >
-                              Edit
-                            </button>
 
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-danger"
-                              onClick={() => onDelete(client)}
+                  <tbody>
+                    {clients.map((client, index) => {
+                      const locationsCount = getLocationsCount(client);
+
+                      return (
+                        <tr key={client.id}>
+                          <td>{index + 1}</td>
+
+                          <td>{client.name}</td>
+
+                          <td>{formatLocationsLabel(locationsCount)}</td>
+
+                          <td>
+                            <span
+                              className={`badge ${
+                                client.is_active
+                                  ? "text-bg-success"
+                                  : "text-bg-secondary"
+                              }`}
                             >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              {client.is_active ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+
+                          <td>{formatDate(client.updated_at)}</td>
+
+                          <td>
+                            <div className="d-flex flex-column gap-2">
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={() => onEdit(client)}
+                              >
+                                Edit
+                              </button>
+
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={() => onLocations(client)}
+                              >
+                                Locations
+                              </button>
+
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => onDelete(client)}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

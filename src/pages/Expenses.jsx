@@ -86,26 +86,87 @@ export default function Expenses() {
     },
   });
 
-  // 🔹 Mutation para crear gasto
+  // Mutation para crear, editar gasto
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (payload) => {
-      const { data } = await api.post("/expenses", payload);
-      return data;
+      try {
+        if (payload.id) {
+          const { id, ...body } = payload;
+          console.log("[PUT /expenses] body:", body);
+
+          const { data } = await api.put(`/expenses/${id}`, body);
+          return data;
+        }
+
+        console.log("[POST /expenses] payload:", payload);
+
+        const { data } = await api.post("/expenses", payload);
+        return data;
+      } catch (err) {
+        console.error(
+          "[Expenses mutation error detail]",
+          JSON.stringify(err?.response?.data?.detail, null, 2),
+        );
+
+        console.error(
+          "[Expenses mutation error full]",
+          err?.response?.data ?? err,
+        );
+
+        throw err;
+      }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["expenses"] }); // refresca la tabla
+      qc.invalidateQueries({ queryKey: ["expenses"] });
     },
   });
 
-  // 🔹 Handlers
-  const [mode, setMode] = useState("list"); // 'list' | 'create'
+  // Mutation para Eliminar gasto
+  const { mutateAsync: deleteExpenseAsync, isPending: isDeleting } =
+    useMutation({
+      mutationFn: async (expenseId) => {
+        const { data } = await api.delete(`/expenses/${expenseId}`);
+        return data;
+      },
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: ["expenses"] });
+      },
+    });
 
-  const startCreate = () => setMode("create");
-  const cancelCreate = () => setMode("list");
+  // 🔹 Handlers
+  const [mode, setMode] = useState("list"); // 'list' | 'create' | 'edit'
+  const [expenseToEdit, setExpenseToEdit] = useState(null);
+
+  const startCreate = () => {
+    setExpenseToEdit(null);
+    setMode("create");
+  };
+
+  const startEdit = (expense) => {
+    setExpenseToEdit(expense);
+    setMode("edit");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelForm = () => {
+    setExpenseToEdit(null);
+    setMode("list");
+  };
 
   const handleSubmit = async (payload) => {
     await mutateAsync(payload);
+    setExpenseToEdit(null);
     setMode("list");
+  };
+
+  const handleDelete = async (expense) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this expense?",
+    );
+
+    if (!confirmed) return;
+
+    await deleteExpenseAsync(expense.id);
   };
 
   const handleCategoryChange = (e) =>
@@ -132,11 +193,13 @@ export default function Expenses() {
 
       {/* Contenido */}
       <div className="px-0">
-        {mode === "create" ? (
+        {mode === "create" || mode === "edit" ? (
           <ExpenseForm
             onSubmit={handleSubmit}
             isSubmitting={isPending}
-            onCancel={cancelCreate}
+            expenseToEdit={expenseToEdit}
+            onCancelEdit={cancelForm}
+            onCancel={cancelForm}
           />
         ) : (
           <>
@@ -210,7 +273,11 @@ export default function Expenses() {
               <p className="text-muted px-3">No hay gastos registrados aún.</p>
             ) : (
               <div className="px-0">
-                <ExpensesTable items={data} />
+                <ExpensesTable
+                  items={data}
+                  onEdit={startEdit}
+                  onDelete={handleDelete}
+                />
               </div>
             )}
           </>

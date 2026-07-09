@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useExpenses } from "@/api/hooks";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, parseLocalDate } from "@/lib/format";
 
 const COLORS = [
   "#3b82f6", // azul
@@ -51,13 +51,13 @@ export default function MonthlyExpensesDonut() {
 
   // Lista de años disponibles según los gastos
   const { items, availableYears } = useMemo(() => {
-    const items = Array.isArray(data) ? data : data?.items ?? [];
+    const items = Array.isArray(data) ? data : (data?.items ?? []);
     const yearsSet = new Set();
 
     for (const exp of items) {
       if (!exp.date) continue;
-      const d = new Date(exp.date);
-      if (!isNaN(d)) {
+      const d = parseLocalDate(exp.date);
+      if (d) {
         yearsSet.add(d.getFullYear());
       }
     }
@@ -72,8 +72,8 @@ export default function MonthlyExpensesDonut() {
 
     for (const exp of items) {
       if (!exp.date) continue;
-      const d = new Date(exp.date);
-      if (isNaN(d)) continue;
+      const d = parseLocalDate(exp.date);
+      if (!d) continue;
 
       if (d.getFullYear() !== selectedYear || d.getMonth() !== selectedMonth) {
         continue;
@@ -95,7 +95,7 @@ export default function MonthlyExpensesDonut() {
     const monthLabel = new Date(
       selectedYear,
       selectedMonth,
-      1
+      1,
     ).toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
     return { chartData, monthLabel, totalAmount: total };
@@ -165,7 +165,7 @@ export default function MonthlyExpensesDonut() {
                 <option key={y} value={y}>
                   {y}
                 </option>
-              )
+              ),
             )}
           </select>
         </div>
