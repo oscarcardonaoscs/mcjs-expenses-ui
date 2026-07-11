@@ -1,7 +1,14 @@
 // src/components/ExpenseForm.jsx
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useCategories, useVendors, usePaymentAccounts } from "@/api/hooks";
+import ExpenseConceptSelect from "./ExpenseConceptSelect";
+import {
+  useCategories,
+  useVendors,
+  usePaymentAccounts,
+  useExpenseConcepts,
+  useCreateExpenseConcept,
+} from "@/api/hooks";
 
 const TAX_RATE = 0.09;
 const normalize = (s = "") => s.toString().trim().toLowerCase();
@@ -10,6 +17,7 @@ function makeDefaults() {
   return {
     date: new Date().toISOString().slice(0, 10),
     category_id: "",
+    expense_concept_id: "",
     vendor_id: "",
     payment_method: "",
     payment_account_id: "",
@@ -98,6 +106,9 @@ function buildFormValuesFromExpense(expense, categories) {
     ...defaults,
     date: getDateValue(expense.date),
     category_id: categoryId ? String(categoryId) : "",
+    expense_concept_id: expense.expense_concept_id
+      ? String(expense.expense_concept_id)
+      : "",
     vendor_id: expense.vendor_id ? String(expense.vendor_id) : "",
     payment_method: expense.payment_method ?? "",
     payment_account_id: expense.payment_account_id
@@ -173,6 +184,13 @@ export default function ExpenseForm({
   const skipNextPaymentAccountClearRef = useRef(false);
   const pendingPaymentAccountIdRef = useRef(null);
   const previousPaymentMethodRef = useRef("");
+  const previousCategoryIdRef = useRef("");
+  const skipNextCategoryConceptClearRef = useRef(false);
+
+  const [showConceptModal, setShowConceptModal] = useState(false);
+  const [newConceptName, setNewConceptName] = useState("");
+  const [conceptCreateError, setConceptCreateError] = useState("");
+  const [locallyCreatedConcepts, setLocallyCreatedConcepts] = useState([]);
 
   const {
     register,
@@ -181,6 +199,7 @@ export default function ExpenseForm({
     watch,
     setValue,
     getValues,
+    clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: makeDefaults(),
@@ -206,6 +225,33 @@ export default function ExpenseForm({
   const apply_tax = watch("apply_tax");
   const carType = watch("c_expense_type");
   const paymentMethod = watch("payment_method");
+
+  const usesExpenseConcept =
+    mode === "SUPPLIES" ||
+    mode === "GENERAL" ||
+    mode === "OTHER" ||
+    (mode === "CAR" && carType !== "Fuel");
+
+  const { data: expenseConcepts = [], isFetching: isLoadingExpenseConcepts } =
+    useExpenseConcepts(categoryId, usesExpenseConcept);
+
+  const availableExpenseConcepts = useMemo(() => {
+    const currentCategoryId = Number(categoryId);
+
+    const localItems = locallyCreatedConcepts.filter(
+      (concept) => Number(concept.category_id) === currentCategoryId,
+    );
+
+    const merged = [...expenseConcepts, ...localItems];
+
+    return Array.from(
+      new Map(merged.map((concept) => [String(concept.id), concept])).values(),
+    ).sort((a, b) => a.name.localeCompare(b.name));
+  }, [categoryId, expenseConcepts, locallyCreatedConcepts]);
+
+  const expenseConceptId = watch("expense_concept_id");
+
+  const createExpenseConcept = useCreateExpenseConcept();
 
   const { data: paymentAccounts = [], isFetching: isLoadingAccounts } =
     usePaymentAccounts(paymentMethod);
@@ -244,6 +290,7 @@ export default function ExpenseForm({
     );
 
     skipNextPaymentAccountClearRef.current = true;
+    skipNextCategoryConceptClearRef.current = true;
     pendingPaymentAccountIdRef.current = formValues.payment_account_id || null;
 
     reset(formValues);
@@ -322,6 +369,30 @@ export default function ExpenseForm({
     setValue,
   ]);
 
+  useEffect(() => {
+    const previousCategoryId = previousCategoryIdRef.current;
+    previousCategoryIdRef.current = categoryId || "";
+
+    if (skipNextCategoryConceptClearRef.current) {
+      skipNextCategoryConceptClearRef.current = false;
+      return;
+    }
+
+    if (!previousCategoryId) return;
+
+    if (String(previousCategoryId) !== String(categoryId || "")) {
+      setValue("expense_concept_id", "");
+    }
+  }, [categoryId, setValue]);
+
+  useEffect(() => {
+    if (!hasCategory) return;
+
+    if (!usesExpenseConcept) {
+      setValue("expense_concept_id", "");
+    }
+  }, [hasCategory, usesExpenseConcept, setValue]);
+
   const sQty = Number(watch("s_quantity") || 0);
   const sUnitPrice = Number(watch("s_unit_price") || 0);
   const suppliesSubtotal = +(sQty * sUnitPrice).toFixed(2);
@@ -356,6 +427,7 @@ export default function ExpenseForm({
     if (!hasCategory) return;
     if (isEditing) return;
 
+    setValue("expense_concept_id", "");
     setValue("description", "");
     setValue("notes", "");
     setValue("gallons_miles", "");
@@ -393,6 +465,20 @@ export default function ExpenseForm({
     let description = (data.description || "").trim();
     let receipt_url = data.receipt_url || "";
     let notes = (data.notes || "").trim();
+
+    const expense_concept_id = data.expense_concept_id
+      ? Number(data.expense_concept_id)
+      : null;
+
+    const selectedExpenseConcept = availableExpenseConcepts.find(
+      (concept) => String(concept.id) === String(expense_concept_id),
+    );
+
+    if (usesExpenseConcept && selectedExpenseConcept) {
+      // Keep description populated for legacy screens/reports while
+      // expense_concept_id becomes the canonical identifier.
+      description = selectedExpenseConcept.name;
+    }
 
     let vendor_id =
       data.vendor_id || data.vendor_id === 0
@@ -449,7 +535,6 @@ export default function ExpenseForm({
       gallons_miles = 0;
       total = gTotal;
       receipt_url = "";
-      notes = "";
     } else if (mode === "SUPPLIES") {
       expense_type = "Supplies";
       quantity = sQty || 0;
@@ -458,7 +543,6 @@ export default function ExpenseForm({
       gallons_miles = 0;
       total = suppliesTotal;
       receipt_url = "";
-      notes = "";
     }
 
     const apply_tax_final = mode === "HELPERS" ? false : tax_applied;
@@ -467,6 +551,7 @@ export default function ExpenseForm({
       id: expenseToEdit?.id,
       date: data.date,
       category_id: data.category_id ? Number(data.category_id) : null,
+      expense_concept_id: usesExpenseConcept ? expense_concept_id : null,
       vendor_id,
 
       description,
@@ -503,6 +588,7 @@ export default function ExpenseForm({
     reset({
       date: getValues("date"),
       category_id: getValues("category_id"),
+      expense_concept_id: "",
       vendor_id: mode === "HELPERS" ? "" : getValues("vendor_id"),
       payment_method: "",
       payment_account_id: "",
@@ -530,6 +616,70 @@ export default function ExpenseForm({
     });
   };
 
+  const openConceptModal = (suggestedName = "") => {
+    if (!categoryId) return;
+
+    setNewConceptName(suggestedName.trim());
+    setConceptCreateError("");
+    setShowConceptModal(true);
+  };
+
+  const closeConceptModal = () => {
+    if (createExpenseConcept.isPending) return;
+
+    setShowConceptModal(false);
+    setNewConceptName("");
+    setConceptCreateError("");
+  };
+
+  const handleCreateExpenseConcept = async () => {
+    const name = newConceptName.trim();
+
+    if (!categoryId) {
+      setConceptCreateError("Select a category first.");
+      return;
+    }
+
+    if (!name) {
+      setConceptCreateError("Concept name is required.");
+      return;
+    }
+
+    try {
+      setConceptCreateError("");
+
+      const created = await createExpenseConcept.mutateAsync({
+        category_id: Number(categoryId),
+        name,
+        is_active: true,
+      });
+
+      setLocallyCreatedConcepts((current) => [
+        ...current.filter(
+          (concept) => String(concept.id) !== String(created.id),
+        ),
+        created,
+      ]);
+
+      setValue("expense_concept_id", String(created.id), {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+
+      clearErrors("expense_concept_id");
+
+      setShowConceptModal(false);
+      setNewConceptName("");
+    } catch (error) {
+      const detail =
+        error?.response?.data?.detail ||
+        error?.message ||
+        "Unable to create expense concept.";
+
+      setConceptCreateError(detail);
+    }
+  };
+
   const handleCancel = () => {
     reset(makeDefaults());
     pendingPaymentAccountIdRef.current = null;
@@ -547,6 +697,35 @@ export default function ExpenseForm({
           </option>
         ))}
       </select>
+    </div>
+  );
+
+  const renderExpenseConceptField = () => (
+    <div className="col-12">
+      <input
+        type="hidden"
+        {...register("expense_concept_id", {
+          required: !isEditing ? "Required" : false,
+        })}
+      />
+
+      <ExpenseConceptSelect
+        key={String(categoryId || "no-category")}
+        concepts={availableExpenseConcepts}
+        value={expenseConceptId}
+        onChange={(conceptId) => {
+          setValue("expense_concept_id", conceptId, {
+            shouldDirty: true,
+            shouldValidate: !!conceptId,
+          });
+
+          clearErrors("expense_concept_id");
+        }}
+        onCreate={openConceptModal}
+        isLoading={isLoadingExpenseConcepts}
+        disabled={!categoryId || createExpenseConcept.isPending}
+        error={errors.expense_concept_id?.message}
+      />
     </div>
   );
 
@@ -875,14 +1054,7 @@ export default function ExpenseForm({
 
           {carType === "Maintenance" && (
             <>
-              <div className="col-12">
-                <label className="form-label">Description</label>
-                <input
-                  className="form-control"
-                  placeholder="e.g., Oil change, tire rotation"
-                  {...register("description")}
-                />
-              </div>
+              {renderExpenseConceptField()}
 
               <div className="col-12 col-md-3">
                 <label className="form-label">Price</label>
@@ -920,14 +1092,7 @@ export default function ExpenseForm({
 
           {carType === "Other" && (
             <>
-              <div className="col-12">
-                <label className="form-label">Description</label>
-                <input
-                  className="form-control"
-                  placeholder="Describe the expense"
-                  {...register("description")}
-                />
-              </div>
+              {renderExpenseConceptField()}
 
               <div className="col-12 col-md-3">
                 <label className="form-label">Subtotal</label>
@@ -1001,12 +1166,14 @@ export default function ExpenseForm({
             </select>
           </div>
 
+          {renderExpenseConceptField()}
+
           <div className="col-12">
-            <label className="form-label">Description</label>
+            <label className="form-label">Notes</label>
             <input
               className="form-control"
-              placeholder="Describe the expense"
-              {...register("description")}
+              placeholder="Optional details"
+              {...register("notes")}
             />
           </div>
 
@@ -1063,12 +1230,14 @@ export default function ExpenseForm({
             </select>
           </div>
 
+          {renderExpenseConceptField()}
+
           <div className="col-12">
-            <label className="form-label">Description</label>
+            <label className="form-label">Notes</label>
             <input
               className="form-control"
-              placeholder="e.g., Paper towels"
-              {...register("description")}
+              placeholder="Optional details, size, presentation, etc."
+              {...register("notes")}
             />
           </div>
 
@@ -1148,6 +1317,98 @@ export default function ExpenseForm({
                 : "Save"}
           </button>
         </div>
+      )}
+
+      {showConceptModal && (
+        <>
+          <div
+            className="modal fade show d-block"
+            tabIndex="-1"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Add an Expense Concept</h5>
+
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={closeConceptModal}
+                    disabled={createExpenseConcept.isPending}
+                  />
+                </div>
+
+                <div className="modal-body">
+                  <p className="text-muted">
+                    Add a concept for{" "}
+                    <strong>{selectedCategory?.name || "this category"}</strong>
+                    .
+                  </p>
+
+                  <label className="form-label">Concept</label>
+
+                  <input
+                    className={`form-control ${
+                      conceptCreateError ? "is-invalid" : ""
+                    }`}
+                    value={newConceptName}
+                    onChange={(event) => {
+                      setNewConceptName(event.target.value);
+                      setConceptCreateError("");
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        handleCreateExpenseConcept();
+                      }
+                    }}
+                    autoFocus
+                    maxLength={150}
+                    disabled={createExpenseConcept.isPending}
+                  />
+
+                  {conceptCreateError && (
+                    <div className="invalid-feedback">{conceptCreateError}</div>
+                  )}
+                </div>
+
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={closeConceptModal}
+                    disabled={createExpenseConcept.isPending}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleCreateExpenseConcept}
+                    disabled={
+                      createExpenseConcept.isPending || !newConceptName.trim()
+                    }
+                  >
+                    {createExpenseConcept.isPending ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" />
+                        Adding...
+                      </>
+                    ) : (
+                      "Add"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-backdrop fade show" />
+        </>
       )}
     </form>
   );

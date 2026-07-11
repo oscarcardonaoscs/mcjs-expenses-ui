@@ -14,6 +14,60 @@ export function useCategories() {
   });
 }
 
+// ---------- Expense Concepts ----------
+export function useExpenseConcepts(categoryId, enabled = true) {
+  const normalizedCategoryId = categoryId ? Number(categoryId) : null;
+
+  return useQuery({
+    queryKey: ["expense-concepts", normalizedCategoryId],
+    queryFn: async () => {
+      const { data } = await api.get("/expense-concepts/", {
+        params: {
+          category_id: normalizedCategoryId,
+          is_active: true,
+        },
+      });
+
+      return (data?.items ?? []).sort((a, b) => a.name.localeCompare(b.name));
+    },
+    enabled: enabled && !!normalizedCategoryId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCreateExpenseConcept() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data } = await api.post("/expense-concepts/", payload);
+      return data;
+    },
+    onSuccess: (createdConcept) => {
+      const categoryId = Number(createdConcept.category_id);
+      const queryKey = ["expense-concepts", categoryId];
+
+      // Add the new concept to the current cache immediately so the
+      // <select> already contains the option before ExpenseForm selects it.
+      qc.setQueryData(queryKey, (current = []) => {
+        const items = Array.isArray(current) ? current : [];
+
+        return [
+          ...items.filter(
+            (concept) => Number(concept.id) !== Number(createdConcept.id),
+          ),
+          createdConcept,
+        ].sort((a, b) => a.name.localeCompare(b.name));
+      });
+
+      // Revalidate with the API in the background.
+      qc.invalidateQueries({
+        queryKey,
+      });
+    },
+  });
+}
+
 // ---------- Vendors ----------
 export function useVendors() {
   return useQuery({
@@ -53,6 +107,7 @@ export function usePaymentAccounts() {
 // ---------- Mutations: Payment Accounts ----------
 export function useCreatePaymentAccount() {
   const qc = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload) => {
       const { data } = await api.post("/payment-accounts", payload);
@@ -64,6 +119,7 @@ export function useCreatePaymentAccount() {
 
 export function useUpdatePaymentAccount() {
   const qc = useQueryClient();
+
   return useMutation({
     mutationFn: async ({ id, payload }) => {
       const { data } = await api.put(`/payment-accounts/${id}`, payload);
@@ -75,6 +131,7 @@ export function useUpdatePaymentAccount() {
 
 export function useDeletePaymentAccount() {
   const qc = useQueryClient();
+
   return useMutation({
     mutationFn: async (id) => {
       await api.delete(`/payment-accounts/${id}`);
@@ -90,6 +147,7 @@ export function useAnnualExpensesByCategory(year) {
       const { data } = await api.get("/reports/annual-expenses-by-category", {
         params: { year },
       });
+
       return data; // { year, items: [...] }
     },
     enabled: !!year,

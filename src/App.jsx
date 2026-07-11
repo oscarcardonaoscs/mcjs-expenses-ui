@@ -214,7 +214,7 @@ export default function App() {
   return (
     <div className="min-vh-100 d-flex">
       <aside
-        className="border-end d-none d-md-flex flex-column"
+        className="border-end d-none d-md-flex flex-column flex-shrink-0"
         style={{ width: 240 }}
       >
         <div className="p-3 fw-bold border-bottom">MCJ's Expenses</div>
@@ -230,7 +230,7 @@ export default function App() {
         </div>
       </aside>
 
-      <main className="flex-grow-1 d-flex flex-column">
+      <main className="flex-grow-1 d-flex flex-column" style={{ minWidth: 0 }}>
         <header className="navbar bg-white border-bottom py-2 px-3 d-flex align-items-center gap-2">
           <button
             className="navbar-toggler d-md-none"
