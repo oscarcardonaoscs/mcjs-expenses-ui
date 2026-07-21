@@ -179,7 +179,7 @@ export default function Expenses() {
     setFilters((prev) => ({ ...prev, year: Number(e.target.value) }));
 
   return (
-    <div className="px-0 mt-3">
+    <div className="px-2 px-md-0 mt-3">
       {/* Header */}
       <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
         <h1 className="h3 m-0">Expenses</h1>
@@ -272,7 +272,7 @@ export default function Expenses() {
             ) : data.length === 0 ? (
               <p className="text-muted px-3">No hay gastos registrados aún.</p>
             ) : (
-              <div className="px-0">
+              <div>
                 <ExpensesTable
                   items={data}
                   onEdit={startEdit}

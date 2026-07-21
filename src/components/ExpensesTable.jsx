@@ -3,14 +3,15 @@ import { formatCurrency, formatDateMDY } from "@/lib/format";
 
 function formatPayment(method, last4) {
   if (!method) return "";
-  if (!last4) return method; // CASH, ZELLE, etc.
+  if (!last4) return method;
+
   return `${method} **${last4}`;
 }
 
 export function ExpensesTable({ items, onEdit, onDelete }) {
   return (
     <>
-      {/* ========= Versión DESKTOP (md en adelante) ========= */}
+      {/* ================= DESKTOP ================= */}
       <div className="table-responsive d-none d-md-block">
         <table className="table table-sm align-middle">
           <thead>
@@ -27,21 +28,28 @@ export function ExpensesTable({ items, onEdit, onDelete }) {
           </thead>
 
           <tbody>
-            {items.map((e) => (
-              <tr key={e.id}>
-                <td>{formatDateMDY(e.date)}</td>
-                <td>{e.category?.name}</td>
-                <td>{e.expense_type}</td>
-                <td>{e.vendor?.name}</td>
-                <td>{e.description}</td>
+            {items.map((expense) => (
+              <tr key={expense.id}>
+                <td>{formatDateMDY(expense.date)}</td>
 
-                <td className="text-end pe-4">{formatCurrency(e.total)}</td>
+                <td>{expense.category?.name}</td>
+
+                <td>{expense.expense_type}</td>
+
+                <td>{expense.vendor?.name}</td>
+
+                <td>{expense.description}</td>
+
+                <td className="text-end pe-4">
+                  {formatCurrency(expense.total)}
+                </td>
 
                 <td className="ps-3">
-                  {e.payment_method}
-                  {e.payment_account_last4 && (
+                  {expense.payment_method}
+
+                  {expense.payment_account_last4 && (
                     <div className="small text-muted">
-                      **{e.payment_account_last4}
+                      **{expense.payment_account_last4}
                     </div>
                   )}
                 </td>
@@ -51,7 +59,7 @@ export function ExpensesTable({ items, onEdit, onDelete }) {
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-primary"
-                      onClick={() => onEdit(e)}
+                      onClick={() => onEdit(expense)}
                     >
                       Edit
                     </button>
@@ -59,7 +67,7 @@ export function ExpensesTable({ items, onEdit, onDelete }) {
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-danger"
-                      onClick={() => onDelete(e)}
+                      onClick={() => onDelete(expense)}
                     >
                       Delete
                     </button>
@@ -71,69 +79,103 @@ export function ExpensesTable({ items, onEdit, onDelete }) {
         </table>
       </div>
 
-      {/* ========= Versión MOBILE ========= */}
-      <div className="table-responsive d-md-none">
-        <table className="table table-sm align-middle">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Category</th>
-              <th>Item</th>
-              <th className="text-end">Total</th>
-            </tr>
-          </thead>
+      {/* ================= MOBILE ================= */}
+      <div className="d-md-none">
+        <div className="d-flex flex-column gap-3">
+          {items.map((expense) => (
+            <article key={expense.id} className="card border shadow-sm">
+              <div className="card-body p-3">
+                {/* Primera fila: fecha y total */}
+                <div className="d-flex justify-content-between align-items-start gap-3">
+                  <div className="min-w-0">
+                    <div className="small text-muted">Date</div>
 
-          <tbody>
-            {items.map((e) => (
-              <tr key={e.id}>
-                <td>{formatDateMDY(e.date)}</td>
-
-                <td>
-                  <div>{e.category?.name}</div>
-                  {e.expense_type && (
-                    <div className="small text-muted">{e.expense_type}</div>
-                  )}
-                </td>
-
-                <td>
-                  <div>{e.description}</div>
-
-                  {e.vendor?.name && (
-                    <div className="small text-muted">{e.vendor.name}</div>
-                  )}
-
-                  <div className="d-flex gap-2 mt-2">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary"
-                      onClick={() => onEdit(e)}
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => onDelete(e)}
-                    >
-                      Delete
-                    </button>
+                    <div className="fw-semibold text-nowrap">
+                      {formatDateMDY(expense.date)}
+                    </div>
                   </div>
-                </td>
 
-                <td className="text-end">
-                  <div>{formatCurrency(e.total)}</div>
+                  <div className="text-end flex-shrink-0">
+                    <div className="small text-muted">Total</div>
 
-                  {e.payment_method && (
-                    <div className="small text-muted">
-                      {formatPayment(e.payment_method, e.payment_account_last4)}
+                    <div className="fw-bold fs-5">
+                      {formatCurrency(expense.total)}
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="my-3" />
+
+                {/* Descripción */}
+                <div className="mb-3">
+                  <div className="small text-muted mb-1">Item</div>
+
+                  <div className="fw-semibold text-break">
+                    {expense.description || "No description"}
+                  </div>
+
+                  {expense.vendor?.name && (
+                    <div className="small text-muted mt-1">
+                      {expense.vendor.name}
                     </div>
                   )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+
+                {/* Categoría y tipo */}
+                <div className="row g-3 mb-3">
+                  <div className="col-6">
+                    <div className="small text-muted mb-1">Category</div>
+
+                    <div className="text-break">
+                      {expense.category?.name || "—"}
+                    </div>
+                  </div>
+
+                  <div className="col-6">
+                    <div className="small text-muted mb-1">Type</div>
+
+                    <div className="text-break">
+                      {expense.expense_type || "—"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Forma de pago */}
+                {expense.payment_method && (
+                  <div className="mb-3">
+                    <div className="small text-muted mb-1">Payment</div>
+
+                    <div>
+                      {formatPayment(
+                        expense.payment_method,
+                        expense.payment_account_last4,
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Acciones */}
+                <div className="d-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary flex-fill"
+                    onClick={() => onEdit(expense)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger flex-fill"
+                    onClick={() => onDelete(expense)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </>
   );

@@ -8,6 +8,7 @@ const defaultFormData = {
   location_id: "",
   start_time: "",
   end_time: "",
+  service_amount: "",
   notes: "",
 };
 
@@ -356,6 +357,10 @@ function HelperTimeEntryForm({
 
         start_time: initialData.start_time ?? "",
         end_time: initialData.end_time ?? "",
+        service_amount:
+          initialData.service_amount != null
+            ? String(initialData.service_amount)
+            : "",
         notes: initialData.notes ?? "",
       });
     } else {
@@ -571,6 +576,18 @@ function HelperTimeEntryForm({
     const hasStartTime = !!formData.start_time;
     const hasEndTime = !!formData.end_time;
 
+    const serviceAmount =
+      formData.service_amount === "" ? null : Number(formData.service_amount);
+
+    if (
+      serviceAmount !== null &&
+      (!Number.isFinite(serviceAmount) || serviceAmount < 0)
+    ) {
+      setError("Service amount must be a valid amount.");
+
+      return;
+    }
+
     if (hasStartTime && !hasEndTime) {
       setError("End time is required when start time is provided.");
 
@@ -603,6 +620,8 @@ function HelperTimeEntryForm({
       start_time: formData.start_time || null,
 
       end_time: formData.end_time || null,
+
+      service_amount: serviceAmount,
 
       notes: formData.notes?.trim() || "",
 
@@ -793,7 +812,34 @@ function HelperTimeEntryForm({
                 </div>
               </div>
             )}
+            {/* Service Amount */}
+            <div className="col-12 col-md-6">
+              <label htmlFor="service_amount" className="form-label">
+                Service Amount
+              </label>
 
+              <div className="input-group">
+                <span className="input-group-text">$</span>
+
+                <input
+                  id="service_amount"
+                  name="service_amount"
+                  type="number"
+                  className="form-control"
+                  value={formData.service_amount}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-text">
+                Amount charged for this cleaning service.
+              </div>
+            </div>
             {/* Notes */}
             <div className="col-12">
               <label htmlFor="notes" className="form-label">
