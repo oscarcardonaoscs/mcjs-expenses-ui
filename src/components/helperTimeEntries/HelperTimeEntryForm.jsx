@@ -9,6 +9,11 @@ const defaultFormData = {
   start_time: "",
   end_time: "",
   service_amount: "",
+  service_type: "",
+  service_frequency: "",
+  payment_method: "",
+  payment_status: "Pending",
+  payment_received_date: "",
   notes: "",
 };
 
@@ -361,6 +366,11 @@ function HelperTimeEntryForm({
           initialData.service_amount != null
             ? String(initialData.service_amount)
             : "",
+        service_type: initialData.service_type ?? "",
+        service_frequency: initialData.service_frequency ?? "",
+        payment_method: initialData.payment_method ?? "",
+        payment_status: initialData.payment_status ?? "Pending",
+        payment_received_date: initialData.payment_received_date ?? "",
         notes: initialData.notes ?? "",
       });
     } else {
@@ -510,10 +520,33 @@ function HelperTimeEntryForm({
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => {
+      const next = {
+        ...prev,
+        [name]: value,
+      };
+
+      if (name === "work_date") {
+        if (
+          prev.payment_status === "Collected" &&
+          (!prev.payment_received_date ||
+            prev.payment_received_date === prev.work_date)
+        ) {
+          next.payment_received_date = value;
+        }
+      }
+
+      if (name === "payment_status") {
+        if (value === "Pending") {
+          next.payment_method = "";
+          next.payment_received_date = "";
+        } else if (value === "Collected" && !prev.payment_received_date) {
+          next.payment_received_date = prev.work_date || "";
+        }
+      }
+
+      return next;
+    });
   };
 
   const handleClientChange = (clientId) => {
@@ -588,6 +621,23 @@ function HelperTimeEntryForm({
       return;
     }
 
+    if (!formData.service_type) {
+      setError("Please select a service type.");
+
+      return;
+    }
+
+    if (!formData.service_frequency) {
+      setError("Please select a service frequency.");
+
+      return;
+    }
+
+    if (formData.payment_status === "Collected" && !formData.payment_method) {
+      setError("Please select the payment method.");
+      return;
+    }
+
     if (hasStartTime && !hasEndTime) {
       setError("End time is required when start time is provided.");
 
@@ -622,6 +672,22 @@ function HelperTimeEntryForm({
       end_time: formData.end_time || null,
 
       service_amount: serviceAmount,
+
+      service_type: formData.service_type || null,
+
+      service_frequency: formData.service_frequency || null,
+
+      payment_method:
+        formData.payment_status === "Collected"
+          ? formData.payment_method || null
+          : null,
+
+      payment_status: formData.payment_status,
+
+      payment_received_date:
+        formData.payment_status === "Pending"
+          ? null
+          : formData.payment_received_date || null,
 
       notes: formData.notes?.trim() || "",
 
@@ -840,6 +906,112 @@ function HelperTimeEntryForm({
                 Amount charged for this cleaning service.
               </div>
             </div>
+            {/* Service Type */}
+            <div className="col-12 col-md-6">
+              <label htmlFor="service_type" className="form-label">
+                Service Type
+              </label>
+
+              <select
+                id="service_type"
+                name="service_type"
+                className="form-select"
+                value={formData.service_type}
+                onChange={handleChange}
+                disabled={loading}
+              >
+                <option value="">Select service type...</option>
+                <option value="Regular">Regular</option>
+                <option value="Total">Total</option>
+                <option value="Deep">Deep</option>
+                <option value="Move In">Move In</option>
+                <option value="Move Out">Move Out</option>
+                <option value="Post Construction">Post Construction</option>
+                <option value="Airbnb">Airbnb</option>
+              </select>
+            </div>
+
+            {/* Service Frequency */}
+            <div className="col-12 col-md-6">
+              <label htmlFor="service_frequency" className="form-label">
+                Frequency
+              </label>
+
+              <select
+                id="service_frequency"
+                name="service_frequency"
+                className="form-select"
+                value={formData.service_frequency}
+                onChange={handleChange}
+                disabled={loading}
+              >
+                <option value="">Select frequency...</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Bi-weekly">Bi-weekly</option>
+                <option value="Monthly">Monthly</option>
+                <option value="One Time">One Time</option>
+              </select>
+            </div>
+
+            {/* Payment Status */}
+            <div className="col-12 col-md-4">
+              <label htmlFor="payment_status" className="form-label">
+                Payment Status
+              </label>
+
+              <select
+                id="payment_status"
+                name="payment_status"
+                className="form-select"
+                value={formData.payment_status}
+                onChange={handleChange}
+                disabled={loading}
+              >
+                <option value="Pending">Pending</option>
+                <option value="Collected">Collected</option>
+              </select>
+            </div>
+
+            {/* Payment Method */}
+            <div className="col-12 col-md-4">
+              <label htmlFor="payment_method" className="form-label">
+                Payment Method
+              </label>
+
+              <select
+                id="payment_method"
+                name="payment_method"
+                className="form-select"
+                value={formData.payment_method}
+                onChange={handleChange}
+                disabled={loading || formData.payment_status === "Pending"}
+              >
+                <option value="">Select payment method...</option>
+                <option value="Cash">Cash</option>
+                <option value="Venmo">Venmo</option>
+                <option value="Check">Check</option>
+                <option value="Zelle">Zelle</option>
+                <option value="Cash App">Cash App</option>
+              </select>
+            </div>
+
+            {/* Payment Received Date */}
+            <div className="col-12 col-md-4">
+              <label htmlFor="payment_received_date" className="form-label">
+                Payment Date
+              </label>
+
+              <input
+                id="payment_received_date"
+                type="date"
+                name="payment_received_date"
+                className="form-control"
+                value={formData.payment_received_date}
+                onChange={handleChange}
+                disabled={loading || formData.payment_status === "Pending"}
+              />
+            </div>
+
             {/* Notes */}
             <div className="col-12">
               <label htmlFor="notes" className="form-label">
