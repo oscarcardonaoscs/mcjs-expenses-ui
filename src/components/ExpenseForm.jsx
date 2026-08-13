@@ -979,6 +979,10 @@ export default function ExpenseForm({
             <select className="form-select" {...register("c_expense_type")}>
               <option>Fuel</option>
               <option>Maintenance</option>
+              <option>Parts</option>
+              <option>Tools & Equipment</option>
+              <option>Registration & Fees</option>
+              <option>Insurance</option>
               <option>Other</option>
             </select>
           </div>
