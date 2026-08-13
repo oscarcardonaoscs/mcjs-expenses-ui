@@ -150,7 +150,7 @@ function buildFormValuesFromExpense(expense, categories) {
 
     return {
       ...baseValues,
-      c_expense_type: "Other",
+      c_expense_type: expenseType,
       c_other_subtotal: expense.unit_price ?? expense.total ?? "",
     };
   }
@@ -224,6 +224,14 @@ export default function ExpenseForm({
 
   const apply_tax = watch("apply_tax");
   const carType = watch("c_expense_type");
+  const carOtherTypes = [
+    "Parts",
+    "Tools & Equipment",
+    "Registration & Fees",
+    "Insurance",
+    "Other",
+  ];
+  const isCarOtherType = carOtherTypes.includes(carType);
   const paymentMethod = watch("payment_method");
 
   const usesExpenseConcept =
@@ -520,7 +528,7 @@ export default function ExpenseForm({
         gallons_miles = 0;
         total = carMaintTotal;
       } else {
-        expense_type = "Other";
+        expense_type = type;
         quantity = 1;
         unit = "unit";
         unit_price = cOtherSubtotal || 0;
@@ -1094,7 +1102,7 @@ export default function ExpenseForm({
             </>
           )}
 
-          {carType === "Other" && (
+          {isCarOtherType && (
             <>
               {renderExpenseConceptField()}
 
