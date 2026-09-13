@@ -277,6 +277,7 @@ export default function Expenses() {
                   items={data}
                   onEdit={startEdit}
                   onDelete={handleDelete}
+                  isDeleting={isDeleting}
                 />
               </div>
             )}

@@ -1,5 +1,5 @@
-// src/components/MonthlyExpensesDonut.jsx
 import { useMemo, useState } from "react";
+
 import {
   PieChart,
   Pie,
@@ -8,6 +8,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+
 import { useExpenses } from "@/api/hooks";
 import { formatCurrency, parseLocalDate } from "@/lib/format";
 
@@ -37,68 +38,112 @@ const MONTHS = [
   "December",
 ];
 
-function normalizeCategoryName(expense) {
-  return expense.category_name || expense.category?.name || "Uncategorized";
+function normalizeCategoryName(record) {
+  return record.category_name || record.category?.name || "Uncategorized";
 }
 
 export default function MonthlyExpensesDonut() {
   const { data, isLoading, isError, error } = useExpenses();
 
-  // 🔹 estado de mes/año seleccionados
   const now = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth()); // 0–11
+
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
-  // Lista de años disponibles según los gastos
   const { items, availableYears } = useMemo(() => {
-    const items = Array.isArray(data) ? data : (data?.items ?? []);
+    const expenseItems = Array.isArray(data) ? data : (data?.items ?? []);
     const yearsSet = new Set();
 
-    for (const exp of items) {
-      if (!exp.date) continue;
-      const d = parseLocalDate(exp.date);
-      if (d) {
-        yearsSet.add(d.getFullYear());
+    for (const expense of expenseItems) {
+      if (!expense.date) continue;
+
+      const expenseDate = parseLocalDate(expense.date);
+
+      if (expenseDate) {
+        yearsSet.add(expenseDate.getFullYear());
       }
     }
 
     const years = Array.from(yearsSet).sort((a, b) => a - b);
-    return { items, availableYears: years };
+
+    return {
+      items: expenseItems,
+      availableYears: years,
+    };
   }, [data]);
 
   const { chartData, monthLabel, totalAmount } = useMemo(() => {
     let total = 0;
     const byCategory = new Map();
 
-    for (const exp of items) {
-      if (!exp.date) continue;
-      const d = parseLocalDate(exp.date);
-      if (!d) continue;
+    const addAmount = (category, rawAmount) => {
+      const amount = Number(rawAmount ?? 0);
 
-      if (d.getFullYear() !== selectedYear || d.getMonth() !== selectedMonth) {
+      if (!Number.isFinite(amount) || amount === 0) {
+        return;
+      }
+
+      total += amount;
+
+      byCategory.set(category, (byCategory.get(category) || 0) + amount);
+    };
+
+    for (const expense of items) {
+      if (!expense.date) continue;
+
+      const expenseDate = parseLocalDate(expense.date);
+      if (!expenseDate) continue;
+
+      const isSelectedMonth =
+        expenseDate.getFullYear() === selectedYear &&
+        expenseDate.getMonth() === selectedMonth;
+
+      if (!isSelectedMonth) continue;
+
+      /*
+       * New expense-items structure:
+       * Add each item independently so a split receipt can appear
+       * under multiple categories.
+       */
+      if (Array.isArray(expense.items) && expense.items.length > 0) {
+        for (const item of expense.items) {
+          addAmount(normalizeCategoryName(item), item.total);
+        }
+
         continue;
       }
 
-      const cat = normalizeCategoryName(exp);
-      const amount = Number(exp.total ?? exp.amount ?? 0);
-      if (!amount) continue;
-
-      total += amount;
-      byCategory.set(cat, (byCategory.get(cat) || 0) + amount);
+      /*
+       * Temporary compatibility fallback:
+       * Handle an expense returned without expense items.
+       */
+      addAmount(
+        normalizeCategoryName(expense),
+        expense.total ?? expense.amount,
+      );
     }
 
-    const chartData = Array.from(byCategory.entries()).map(([name, value]) => ({
-      name,
-      value,
-    }));
+    const chartData = Array.from(byCategory.entries())
+      .map(([name, value]) => ({
+        name,
+        value,
+      }))
+      .sort((a, b) => b.value - a.value);
 
     const monthLabel = new Date(
       selectedYear,
       selectedMonth,
       1,
-    ).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    ).toLocaleDateString(undefined, {
+      month: "long",
+      year: "numeric",
+    });
 
-    return { chartData, monthLabel, totalAmount: total };
+    return {
+      chartData,
+      monthLabel,
+      totalAmount: total,
+    };
   }, [items, selectedMonth, selectedYear]);
 
   if (isLoading) {
@@ -131,39 +176,37 @@ export default function MonthlyExpensesDonut() {
 
   return (
     <div className="w-full border rounded-lg bg-white shadow-sm p-4">
-      {/* Header con título + selects de mes/año */}
       <div className="flex items-center justify-between mb-2 gap-2">
         <div>
           <h2 className="text-base font-semibold text-gray-800">
             Monthly Expenses by Category
           </h2>
+
           <p className="text-xs text-gray-400">Select month and year</p>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Mes */}
           <select
             className="border rounded px-1 py-0.5 text-xs text-gray-700 bg-white"
             value={selectedMonth}
-            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            onChange={(event) => setSelectedMonth(Number(event.target.value))}
           >
-            {MONTHS.map((m, idx) => (
-              <option key={m} value={idx}>
-                {m}
+            {MONTHS.map((month, index) => (
+              <option key={month} value={index}>
+                {month}
               </option>
             ))}
           </select>
 
-          {/* Año */}
           <select
             className="border rounded px-1 py-0.5 text-xs text-gray-700 bg-white"
             value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            onChange={(event) => setSelectedYear(Number(event.target.value))}
           >
             {(availableYears.length ? availableYears : [now.getFullYear()]).map(
-              (y) => (
-                <option key={y} value={y}>
-                  {y}
+              (year) => (
+                <option key={year} value={year}>
+                  {year}
                 </option>
               ),
             )}
@@ -171,10 +214,13 @@ export default function MonthlyExpensesDonut() {
         </div>
       </div>
 
-      {/* Gráfica */}
       <div
         className="relative mt-2"
-        style={{ width: "100%", height: 260, minWidth: 0 }}
+        style={{
+          width: "100%",
+          height: 260,
+          minWidth: 0,
+        }}
       >
         {hasData ? (
           <>
@@ -183,10 +229,12 @@ export default function MonthlyExpensesDonut() {
                 <Tooltip
                   formatter={(value) => `$${Number(value).toFixed(2)}`}
                 />
+
                 <Legend
                   verticalAlign="bottom"
                   wrapperStyle={{ fontSize: "0.75rem" }}
                 />
+
                 <Pie
                   data={chartData}
                   dataKey="value"
@@ -199,7 +247,7 @@ export default function MonthlyExpensesDonut() {
                 >
                   {chartData.map((entry, index) => (
                     <Cell
-                      key={`cell-${index}`}
+                      key={`cell-${entry.name}-${index}`}
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
@@ -207,11 +255,11 @@ export default function MonthlyExpensesDonut() {
               </PieChart>
             </ResponsiveContainer>
 
-            {/* Total en el centro */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-xs text-gray-400 uppercase tracking-wide font-bold">
                 Total
               </span>
+
               <span className="text-lg font-semibold text-gray-800">
                 {formatCurrency(totalAmount)}
               </span>

@@ -8,6 +8,8 @@ const defaultFormData = {
   location_id: "",
   start_time: "",
   end_time: "",
+  alma_work_minutes: "",
+  oscar_work_minutes: "",
   service_amount: "",
   service_type: "",
   service_frequency: "",
@@ -317,6 +319,11 @@ function HelperTimeEntryForm({
 }) {
   const [formData, setFormData] = useState(defaultFormData);
 
+  const [ownerChecked, setOwnerChecked] = useState({
+    alma: false,
+    oscar: false,
+  });
+
   const [locations, setLocations] = useState([]);
 
   const [locationsLoading, setLocationsLoading] = useState(false);
@@ -346,6 +353,16 @@ function HelperTimeEntryForm({
             ? [String(initialData.helper_id)]
             : [];
 
+      const almaWorkMinutes =
+        initialData.alma_work_minutes != null
+          ? String(initialData.alma_work_minutes)
+          : "";
+
+      const oscarWorkMinutes =
+        initialData.oscar_work_minutes != null
+          ? String(initialData.oscar_work_minutes)
+          : "";
+
       setFormData({
         helper_ids: initialHelperIds,
         work_date: initialData.work_date ?? "",
@@ -362,10 +379,19 @@ function HelperTimeEntryForm({
 
         start_time: initialData.start_time ?? "",
         end_time: initialData.end_time ?? "",
+
+        /*
+         * NULL significa que no tenemos información
+         * histórica sobre el tiempo trabajado por el owner.
+         */
+        alma_work_minutes: almaWorkMinutes,
+        oscar_work_minutes: oscarWorkMinutes,
+
         service_amount:
           initialData.service_amount != null
             ? String(initialData.service_amount)
             : "",
+
         service_type: initialData.service_type ?? "",
         service_frequency: initialData.service_frequency ?? "",
         payment_method: initialData.payment_method ?? "",
@@ -373,10 +399,27 @@ function HelperTimeEntryForm({
         payment_received_date: initialData.payment_received_date ?? "",
         notes: initialData.notes ?? "",
       });
+
+      setOwnerChecked({
+        alma:
+          almaWorkMinutes !== "" &&
+          Number.isFinite(Number(almaWorkMinutes)) &&
+          Number(almaWorkMinutes) > 0,
+
+        oscar:
+          oscarWorkMinutes !== "" &&
+          Number.isFinite(Number(oscarWorkMinutes)) &&
+          Number(oscarWorkMinutes) > 0,
+      });
     } else {
       setFormData({
         ...defaultFormData,
         helper_ids: [],
+      });
+
+      setOwnerChecked({
+        alma: false,
+        oscar: false,
       });
     }
 
@@ -520,6 +563,26 @@ function HelperTimeEntryForm({
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    /*
+     * Si los minutos de un owner se modifican manualmente,
+     * mantenemos el checkbox sincronizado.
+     */
+    if (name === "alma_work_minutes") {
+      setOwnerChecked((prev) => ({
+        ...prev,
+        alma:
+          value !== "" && Number.isFinite(Number(value)) && Number(value) > 0,
+      }));
+    }
+
+    if (name === "oscar_work_minutes") {
+      setOwnerChecked((prev) => ({
+        ...prev,
+        oscar:
+          value !== "" && Number.isFinite(Number(value)) && Number(value) > 0,
+      }));
+    }
+
     setFormData((prev) => {
       const next = {
         ...prev,
@@ -571,6 +634,36 @@ function HelperTimeEntryForm({
     }));
   };
 
+  // ---------------------------------------------------------
+  // Owners
+  // ---------------------------------------------------------
+  const handleOwnerToggle = (owner) => {
+    if (workMinutes === null) {
+      return;
+    }
+
+    setOwnerChecked((prev) => {
+      const nextChecked = !prev[owner];
+
+      setFormData((currentFormData) => ({
+        ...currentFormData,
+
+        ...(owner === "alma"
+          ? {
+              alma_work_minutes: nextChecked ? String(workMinutes) : "0",
+            }
+          : {
+              oscar_work_minutes: nextChecked ? String(workMinutes) : "0",
+            }),
+      }));
+
+      return {
+        ...prev,
+        [owner]: nextChecked,
+      };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -612,11 +705,39 @@ function HelperTimeEntryForm({
     const serviceAmount =
       formData.service_amount === "" ? null : Number(formData.service_amount);
 
+    const almaWorkMinutes =
+      formData.alma_work_minutes === ""
+        ? null
+        : Number(formData.alma_work_minutes);
+
+    const oscarWorkMinutes =
+      formData.oscar_work_minutes === ""
+        ? null
+        : Number(formData.oscar_work_minutes);
+
     if (
       serviceAmount !== null &&
       (!Number.isFinite(serviceAmount) || serviceAmount < 0)
     ) {
       setError("Service amount must be a valid amount.");
+
+      return;
+    }
+
+    if (
+      almaWorkMinutes !== null &&
+      (!Number.isInteger(almaWorkMinutes) || almaWorkMinutes < 0)
+    ) {
+      setError("Alma work minutes must be a valid number of minutes.");
+
+      return;
+    }
+
+    if (
+      oscarWorkMinutes !== null &&
+      (!Number.isInteger(oscarWorkMinutes) || oscarWorkMinutes < 0)
+    ) {
+      setError("Oscar work minutes must be a valid number of minutes.");
 
       return;
     }
@@ -635,6 +756,7 @@ function HelperTimeEntryForm({
 
     if (formData.payment_status === "Collected" && !formData.payment_method) {
       setError("Please select the payment method.");
+
       return;
     }
 
@@ -670,6 +792,18 @@ function HelperTimeEntryForm({
       start_time: formData.start_time || null,
 
       end_time: formData.end_time || null,
+
+      /*
+       * Owner work time belongs to the work event,
+       * not to helper_time_entries.
+       *
+       * null = unknown / not captured
+       * 0    = did not work
+       * > 0  = minutes worked
+       */
+      alma_work_minutes: almaWorkMinutes,
+
+      oscar_work_minutes: oscarWorkMinutes,
 
       service_amount: serviceAmount,
 
@@ -708,7 +842,7 @@ function HelperTimeEntryForm({
       setError(
         err?.response?.data?.detail ||
           err?.message ||
-          "Failed to save time entry.",
+          "Failed to save work event.",
       );
     }
   };
@@ -837,8 +971,8 @@ function HelperTimeEntryForm({
               />
             </div>
 
-            {/* Start Time */}
-            <div className="col-12 col-md-6">
+            {/* Times */}
+            <div className="col-6">
               <label htmlFor="start_time" className="form-label">
                 Start Time
               </label>
@@ -854,8 +988,7 @@ function HelperTimeEntryForm({
               />
             </div>
 
-            {/* End Time */}
-            <div className="col-12 col-md-6">
+            <div className="col-6">
               <label htmlFor="end_time" className="form-label">
                 End Time
               </label>
@@ -871,13 +1004,106 @@ function HelperTimeEntryForm({
               />
             </div>
 
-            {(formData.start_time || formData.end_time) && (
-              <div className="col-12">
-                <div className="alert alert-light border mb-0" role="alert">
+            {/* Duration + Owners */}
+            <div className="col-12">
+              <div className="alert alert-light border mb-0">
+                <div className="mb-3">
                   <strong>Duration:</strong> {duration || "-"}
                 </div>
+
+                <div className="row g-3">
+                  {/* Alma */}
+                  <div className="col-12 col-md-6">
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <input
+                        id="alma_worked"
+                        type="checkbox"
+                        className="form-check-input mt-0"
+                        checked={ownerChecked.alma}
+                        onChange={() => handleOwnerToggle("alma")}
+                        disabled={loading || workMinutes === null}
+                      />
+
+                      <label
+                        htmlFor="alma_worked"
+                        className="form-check-label fw-semibold"
+                      >
+                        Alma worked
+                      </label>
+                    </div>
+
+                    <div className="input-group">
+                      <input
+                        id="alma_work_minutes"
+                        type="number"
+                        name="alma_work_minutes"
+                        className="form-control"
+                        value={formData.alma_work_minutes}
+                        onChange={handleChange}
+                        min="0"
+                        step="1"
+                        inputMode="numeric"
+                        disabled={loading}
+                        placeholder="Minutes"
+                      />
+
+                      <span className="input-group-text">min</span>
+                    </div>
+                  </div>
+
+                  {/* Oscar */}
+                  <div className="col-12 col-md-6">
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <input
+                        id="oscar_worked"
+                        type="checkbox"
+                        className="form-check-input mt-0"
+                        checked={ownerChecked.oscar}
+                        onChange={() => handleOwnerToggle("oscar")}
+                        disabled={loading || workMinutes === null}
+                      />
+
+                      <label
+                        htmlFor="oscar_worked"
+                        className="form-check-label fw-semibold"
+                      >
+                        Oscar worked
+                      </label>
+                    </div>
+
+                    <div className="input-group">
+                      <input
+                        id="oscar_work_minutes"
+                        type="number"
+                        name="oscar_work_minutes"
+                        className="form-control"
+                        value={formData.oscar_work_minutes}
+                        onChange={handleChange}
+                        min="0"
+                        step="1"
+                        inputMode="numeric"
+                        disabled={loading}
+                        placeholder="Minutes"
+                      />
+
+                      <span className="input-group-text">min</span>
+                    </div>
+                  </div>
+                </div>
+
+                {workMinutes === null ? (
+                  <div className="form-text mt-2">
+                    Enter Start Time and End Time to enable owner autofill.
+                  </div>
+                ) : (
+                  <div className="form-text mt-2">
+                    Checking an owner automatically fills the event duration.
+                    You can edit the minutes afterward if needed.
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
             {/* Service Amount */}
             <div className="col-12 col-md-6">
               <label htmlFor="service_amount" className="form-label">
@@ -906,6 +1132,7 @@ function HelperTimeEntryForm({
                 Amount charged for this cleaning service.
               </div>
             </div>
+
             {/* Service Type */}
             <div className="col-12 col-md-6">
               <label htmlFor="service_type" className="form-label">
