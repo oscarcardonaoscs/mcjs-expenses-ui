@@ -1,4 +1,3 @@
-// src/main.jsx
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -6,6 +5,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import App from "./App.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Expenses from "./pages/Expenses.jsx";
@@ -18,7 +18,7 @@ import HelperPayrollPeriodsPage from "./pages/helpers/HelperPayrollPeriodsPage.j
 import ClientsPage from "./pages/ClientsPage.jsx";
 import ClientLocationsPage from "./pages/ClientLocationsPage.jsx";
 import ClientLocationFormPage from "./pages/ClientLocationFormPage.jsx";
-
+import ServiceHistoryPage from "./pages/history/ServiceHistoryPage.jsx";
 import Login from "./pages/Login.jsx";
 import "./index.css";
 
@@ -27,18 +27,24 @@ const qc = new QueryClient();
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />, // App será tu Layout
+    element: <App />,
     children: [
-      { index: true, element: <Dashboard /> }, // "/" -> Dashboard
+      { index: true, element: <Dashboard /> },
       { path: "expenses", element: <Expenses /> },
       { path: "categories", element: <Categories /> },
       { path: "vendors", element: <Vendors /> },
       { path: "payment-accounts", element: <PaymentAccounts /> },
       { path: "helpers", element: <HelpersPage /> },
       { path: "helper-time-entries", element: <HelperTimeEntriesPage /> },
-      { path: "helper-payroll-periods", element: <HelperPayrollPeriodsPage /> },
+      {
+        path: "helper-payroll-periods",
+        element: <HelperPayrollPeriodsPage />,
+      },
       { path: "clients", element: <ClientsPage /> },
-      { path: "clients/:clientId/locations", element: <ClientLocationsPage /> },
+      {
+        path: "clients/:clientId/locations",
+        element: <ClientLocationsPage />,
+      },
       {
         path: "clients/:clientId/locations/new",
         element: <ClientLocationFormPage />,
@@ -47,9 +53,11 @@ const router = createBrowserRouter([
         path: "clients/:clientId/locations/:locationId/edit",
         element: <ClientLocationFormPage />,
       },
-
+      {
+        path: "service-history",
+        element: <ServiceHistoryPage />,
+      },
       { path: "login", element: <Login /> },
-      // opcional: si quieres que /dashboard también funcione
       { path: "dashboard", element: <Dashboard /> },
     ],
   },

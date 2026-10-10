@@ -1,10 +1,6 @@
-// src/App.jsx
 import { useEffect, useRef } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
-/** ============================
- *  Desktop sidebar (NavLink normal)
- *  ============================ */
 function SidebarLinksDesktop() {
   const linkCls = ({ isActive }) =>
     "nav-link p-0" + (isActive ? " fw-semibold text-primary" : "");
@@ -14,46 +10,46 @@ function SidebarLinksDesktop() {
       <NavLink className={linkCls} to="/" end>
         Dashboard
       </NavLink>
+
       <hr className="sidebar-divider my-2" />
 
       <div className="sidebar-heading">Catalogs</div>
-
       <NavLink className={linkCls} to="/clients">
         Clients
       </NavLink>
-      <hr className="sidebar-divider my-2" />
-      {/* Finance */}
-      <div className="sidebar-heading">Finance</div>
 
+      <hr className="sidebar-divider my-2" />
+
+      <div className="sidebar-heading">History</div>
+      <NavLink className={linkCls} to="/service-history">
+        Service History
+      </NavLink>
+
+      <hr className="sidebar-divider my-2" />
+
+      <div className="sidebar-heading">Finance</div>
       <NavLink className={linkCls} to="/expenses">
         Expenses
       </NavLink>
-
       <NavLink className={linkCls} to="/categories">
         Categories
       </NavLink>
-
       <NavLink className={linkCls} to="/vendors">
         Vendors
       </NavLink>
-
       <NavLink className={linkCls} to="/payment-accounts">
         Payment Accounts
       </NavLink>
 
       <hr className="sidebar-divider my-2" />
 
-      {/* Payroll */}
       <div className="sidebar-heading">Payroll</div>
-
       <NavLink className={linkCls} to="/helpers">
         Helpers
       </NavLink>
-
       <NavLink className={linkCls} to="/helper-time-entries">
         Helper Time Entries
       </NavLink>
-
       <NavLink className={linkCls} to="/helper-payroll-periods">
         Helper Payroll Periods
       </NavLink>
@@ -61,11 +57,6 @@ function SidebarLinksDesktop() {
   );
 }
 
-/** ============================
- *  Mobile sidebar (Offcanvas)
- *  - NO navega directamente.
- *  - Coloca el destino en pendingRef y cierra con data-bs-dismiss.
- *  ============================ */
 function SidebarLinksOffcanvas({ pendingRef }) {
   const location = useLocation();
 
@@ -73,14 +64,13 @@ function SidebarLinksOffcanvas({ pendingRef }) {
     "nav-link p-0" +
     (location.pathname === to ? " fw-semibold text-primary" : "");
 
-  const makeHandler = (to) => (e) => {
-    e.preventDefault();
+  const makeHandler = (to) => (event) => {
+    event.preventDefault();
     pendingRef.current = to;
   };
 
   return (
     <nav className="nav flex-column gap-2">
-      {/* Dashboard */}
       <a
         href="/"
         className={linkCls("/")}
@@ -89,10 +79,10 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Dashboard
       </a>
+
       <div className="mt-3 mb-1 small text-uppercase text-muted fw-bold">
         Catalogs
       </div>
-
       <a
         href="/clients"
         className={linkCls("/clients")}
@@ -101,12 +91,26 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Clients
       </a>
+
       <hr className="my-2" />
-      {/* Finance Section */}
+
+      <div className="mb-1 small text-uppercase text-muted fw-bold">
+        History
+      </div>
+      <a
+        href="/service-history"
+        className={linkCls("/service-history")}
+        data-bs-dismiss="offcanvas"
+        onClick={makeHandler("/service-history")}
+      >
+        Service History
+      </a>
+
+      <hr className="my-2" />
+
       <div className="mb-1 small text-uppercase text-muted fw-bold">
         Finance
       </div>
-
       <a
         href="/expenses"
         className={linkCls("/expenses")}
@@ -115,7 +119,6 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Expenses
       </a>
-
       <a
         href="/categories"
         className={linkCls("/categories")}
@@ -124,7 +127,6 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Categories
       </a>
-
       <a
         href="/vendors"
         className={linkCls("/vendors")}
@@ -133,7 +135,6 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Vendors
       </a>
-
       <a
         href="/payment-accounts"
         className={linkCls("/payment-accounts")}
@@ -143,14 +144,11 @@ function SidebarLinksOffcanvas({ pendingRef }) {
         Payment Accounts
       </a>
 
-      {/* Divider */}
       <hr className="my-2" />
 
-      {/* Payroll Section */}
       <div className="mb-1 small text-uppercase text-muted fw-bold">
         Payroll
       </div>
-
       <a
         href="/helpers"
         className={linkCls("/helpers")}
@@ -159,7 +157,6 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Helpers
       </a>
-
       <a
         href="/helper-time-entries"
         className={linkCls("/helper-time-entries")}
@@ -168,7 +165,6 @@ function SidebarLinksOffcanvas({ pendingRef }) {
       >
         Helper Time Entries
       </a>
-
       <a
         href="/helper-payroll-periods"
         className={linkCls("/helper-payroll-periods")}
@@ -181,13 +177,9 @@ function SidebarLinksOffcanvas({ pendingRef }) {
   );
 }
 
-/** ============================
- *  App principal
- *  ============================ */
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
-
   const pendingPathRef = useRef(null);
 
   useEffect(() => {
