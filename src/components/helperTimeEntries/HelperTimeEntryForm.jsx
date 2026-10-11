@@ -669,9 +669,20 @@ function HelperTimeEntryForm({
 
     setError("");
 
-    if (!formData.helper_ids.length) {
-      setError("Please select at least one helper.");
+    const hasHelpers = formData.helper_ids.length > 0;
 
+    const hasAlma =
+      formData.alma_work_minutes !== "" &&
+      Number(formData.alma_work_minutes) > 0;
+
+    const hasOscar =
+      formData.oscar_work_minutes !== "" &&
+      Number(formData.oscar_work_minutes) > 0;
+
+    if (!hasHelpers && !hasAlma && !hasOscar) {
+      setError(
+        "Please select at least one team member (Alma, Oscar, or a helper).",
+      );
       return;
     }
 
