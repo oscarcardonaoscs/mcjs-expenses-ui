@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-
+import { useMemo } from "react";
 import {
   PieChart,
   Pie,
@@ -13,264 +12,139 @@ import { useExpenses } from "@/api/hooks";
 import { formatCurrency, parseLocalDate } from "@/lib/format";
 
 const COLORS = [
-  "#3b82f6", // azul
-  "#22c55e", // verde
-  "#f97316", // naranja
-  "#a855f7", // morado
-  "#ef4444", // rojo
-  "#14b8a6", // teal
-  "#eab308", // amarillo
-  "#6366f1", // indigo
-];
-
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "#3b82f6",
+  "#22c55e",
+  "#f97316",
+  "#a855f7",
+  "#ef4444",
+  "#14b8a6",
+  "#eab308",
+  "#6366f1",
 ];
 
 function normalizeCategoryName(record) {
   return record.category_name || record.category?.name || "Uncategorized";
 }
 
-export default function MonthlyExpensesDonut() {
+export default function MonthlyExpensesDonut({ year, month }) {
   const { data, isLoading, isError, error } = useExpenses();
 
-  const now = new Date();
-
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
-  const { items, availableYears } = useMemo(() => {
-    const expenseItems = Array.isArray(data) ? data : (data?.items ?? []);
-    const yearsSet = new Set();
-
-    for (const expense of expenseItems) {
-      if (!expense.date) continue;
-
-      const expenseDate = parseLocalDate(expense.date);
-
-      if (expenseDate) {
-        yearsSet.add(expenseDate.getFullYear());
-      }
-    }
-
-    const years = Array.from(yearsSet).sort((a, b) => a - b);
-
-    return {
-      items: expenseItems,
-      availableYears: years,
-    };
-  }, [data]);
-
-  const { chartData, monthLabel, totalAmount } = useMemo(() => {
-    let total = 0;
+  const { chartData, totalAmount } = useMemo(() => {
+    const expenses = Array.isArray(data) ? data : (data?.items ?? []);
     const byCategory = new Map();
+    let total = 0;
 
     const addAmount = (category, rawAmount) => {
       const amount = Number(rawAmount ?? 0);
-
-      if (!Number.isFinite(amount) || amount === 0) {
-        return;
-      }
-
+      if (!Number.isFinite(amount) || amount === 0) return;
       total += amount;
-
       byCategory.set(category, (byCategory.get(category) || 0) + amount);
     };
 
-    for (const expense of items) {
+    for (const expense of expenses) {
       if (!expense.date) continue;
-
       const expenseDate = parseLocalDate(expense.date);
       if (!expenseDate) continue;
 
-      const isSelectedMonth =
-        expenseDate.getFullYear() === selectedYear &&
-        expenseDate.getMonth() === selectedMonth;
+      if (
+        expenseDate.getFullYear() !== year ||
+        expenseDate.getMonth() + 1 !== month
+      ) {
+        continue;
+      }
 
-      if (!isSelectedMonth) continue;
-
-      /*
-       * New expense-items structure:
-       * Add each item independently so a split receipt can appear
-       * under multiple categories.
-       */
+      // Tickets divided into expense_items: use each item once.
       if (Array.isArray(expense.items) && expense.items.length > 0) {
         for (const item of expense.items) {
           addAmount(normalizeCategoryName(item), item.total);
         }
-
-        continue;
+      } else {
+        // Compatibility with older expenses without items.
+        addAmount(
+          normalizeCategoryName(expense),
+          expense.total ?? expense.amount,
+        );
       }
-
-      /*
-       * Temporary compatibility fallback:
-       * Handle an expense returned without expense items.
-       */
-      addAmount(
-        normalizeCategoryName(expense),
-        expense.total ?? expense.amount,
-      );
     }
 
-    const chartData = Array.from(byCategory.entries())
-      .map(([name, value]) => ({
+    return {
+      chartData: Array.from(byCategory, ([name, value]) => ({
         name,
         value,
-      }))
-      .sort((a, b) => b.value - a.value);
-
-    const monthLabel = new Date(
-      selectedYear,
-      selectedMonth,
-      1,
-    ).toLocaleDateString(undefined, {
-      month: "long",
-      year: "numeric",
-    });
-
-    return {
-      chartData,
-      monthLabel,
+      })).sort((a, b) => b.value - a.value),
       totalAmount: total,
     };
-  }, [items, selectedMonth, selectedYear]);
+  }, [data, year, month]);
 
-  if (isLoading) {
-    return (
-      <div className="w-full h-64 flex items-center justify-center border rounded-lg bg-white shadow-sm">
-        <span className="text-sm text-gray-500">Loading monthly expenses…</span>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="w-full h-64 flex items-center justify-center border rounded-lg bg-white shadow-sm">
-        <span className="text-sm text-red-500">
-          Error loading expenses: {error?.message || "Unknown error"}
-        </span>
-      </div>
-    );
-  }
-
-  if (!items.length) {
-    return (
-      <div className="w-full h-64 flex flex-col items-center justify-center border rounded-lg bg-white shadow-sm px-4 text-center">
-        <p className="text-sm text-gray-500">No expenses found yet.</p>
-      </div>
-    );
-  }
-
-  const hasData = chartData.length > 0;
+  const periodLabel = new Date(year, month - 1, 1).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
-    <div className="w-full border rounded-lg bg-white shadow-sm p-4">
-      <div className="flex items-center justify-between mb-2 gap-2">
+    <section className="mcj-section-card" style={{ minWidth: 0 }}>
+      <div className="mcj-section-heading">
         <div>
-          <h2 className="text-base font-semibold text-gray-800">
-            Monthly Expenses by Category
-          </h2>
-
-          <p className="text-xs text-gray-400">Select month and year</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <select
-            className="border rounded px-1 py-0.5 text-xs text-gray-700 bg-white"
-            value={selectedMonth}
-            onChange={(event) => setSelectedMonth(Number(event.target.value))}
-          >
-            {MONTHS.map((month, index) => (
-              <option key={month} value={index}>
-                {month}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className="border rounded px-1 py-0.5 text-xs text-gray-700 bg-white"
-            value={selectedYear}
-            onChange={(event) => setSelectedYear(Number(event.target.value))}
-          >
-            {(availableYears.length ? availableYears : [now.getFullYear()]).map(
-              (year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ),
-            )}
-          </select>
+          <h2 className="mcj-section-title">Monthly Expenses by Category</h2>
+          <p className="mcj-section-subtitle">{periodLabel}</p>
         </div>
       </div>
 
-      <div
-        className="relative mt-2"
-        style={{
-          width: "100%",
-          height: 260,
-          minWidth: 0,
-        }}
-      >
-        {hasData ? (
-          <>
+      {isLoading ? (
+        <p className="mcj-chart-state">Loading monthly expenses...</p>
+      ) : isError ? (
+        <p className="mcj-chart-state" role="alert">
+          Error loading expenses: {error?.message || "Unknown error"}
+        </p>
+      ) : chartData.length === 0 ? (
+        <p className="mcj-chart-state">No expenses found for this month.</p>
+      ) : (
+        <>
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              height: 290,
+              minWidth: 0,
+            }}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Tooltip
-                  formatter={(value) => `$${Number(value).toFixed(2)}`}
-                />
-
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                 <Legend
                   verticalAlign="bottom"
-                  wrapperStyle={{ fontSize: "0.75rem" }}
+                  wrapperStyle={{ fontSize: 12 }}
                 />
-
                 <Pie
                   data={chartData}
                   dataKey="value"
                   nameKey="name"
-                  innerRadius={70}
-                  outerRadius={110}
+                  innerRadius={65}
+                  outerRadius={105}
                   paddingAngle={2}
                   stroke="#ffffff"
                   strokeWidth={1}
                 >
                   {chartData.map((entry, index) => (
                     <Cell
-                      key={`cell-${entry.name}-${index}`}
+                      key={`${entry.name}-${index}`}
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xs text-gray-400 uppercase tracking-wide font-bold">
-                Total
-              </span>
-
-              <span className="text-lg font-semibold text-gray-800">
-                {formatCurrency(totalAmount)}
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 text-center px-4">
-            No expenses found for this month.
           </div>
-        )}
-      </div>
-    </div>
+          <div style={{ textAlign: "center", marginTop: 4 }}>
+            <span style={{ fontSize: 12, color: "#64748b", marginRight: 8 }}>
+              Total Expenses
+            </span>
+            <strong style={{ fontSize: 16, color: "#17202f" }}>
+              {formatCurrency(totalAmount)}
+            </strong>
+          </div>
+        </>
+      )}
+    </section>
   );
 }

@@ -1,5 +1,5 @@
 // src/components/AnnualExpensesByCategoryBar.jsx
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -10,11 +10,8 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-
 import { useAnnualExpensesByCategory } from "@/api/hooks";
 import { formatCurrency } from "@/lib/format";
-
-const CURRENT_YEAR = new Date().getFullYear();
 
 const CATEGORY_COLORS = {
   "Car/Gasoline": "#2563eb",
@@ -22,7 +19,6 @@ const CATEGORY_COLORS = {
   Helpers: "#f59e0b",
   Supplies: "#dc2626",
 };
-
 const FALLBACK_COLORS = [
   "#2563eb",
   "#16a34a",
@@ -32,102 +28,89 @@ const FALLBACK_COLORS = [
   "#0d9488",
 ];
 
+// This component renders ONLY its chart. The Dashboard owns the card and year filter.
 export default function AnnualExpensesByCategoryBar({
-  initialYear = CURRENT_YEAR,
+  year = new Date().getFullYear(),
 }) {
-  const [year, setYear] = useState(initialYear);
   const { data, isLoading, isError, error } = useAnnualExpensesByCategory(year);
-
-  const isMobile = window.innerWidth < 640; // sm breakpoint
 
   const categories = useMemo(() => {
     if (!data?.items) return [];
-    const set = new Set();
-    data.items.forEach((m) => {
-      Object.keys(m.categories || {}).forEach((c) => set.add(c));
-    });
-    return Array.from(set).sort();
+    const names = new Set();
+    data.items.forEach((item) =>
+      Object.keys(item.categories || {}).forEach((name) => names.add(name)),
+    );
+    return Array.from(names).sort();
   }, [data]);
 
   const chartData = useMemo(() => {
     if (!data?.items) return [];
-    return data.items.map((m) => ({
-      month: m.month_label,
-      ...m.categories,
+    return data.items.map((item) => ({
+      month: item.month_label,
+      ...item.categories,
     }));
   }, [data]);
 
-  if (isLoading) return <div>Loading annual expenses...</div>;
-  if (isError) return <div className="text-red-600">{error?.message}</div>;
-  if (!chartData.length) return <div>No data found.</div>;
-
-  const yearOptions = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2];
+  if (isLoading)
+    return <p className="mcj-chart-state">Loading annual expenses...</p>;
+  if (isError)
+    return (
+      <p className="mcj-chart-state" role="alert">
+        {error?.message || "Unable to load annual expenses."}
+      </p>
+    );
+  if (!chartData.length)
+    return <p className="mcj-chart-state">No data found for {year}.</p>;
 
   return (
-    <div className="border rounded-lg shadow-sm bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b">
-        <h5 className="font-semibold text-gray-800 mb-0">
-          Annual Expenses by Category
-        </h5>
-
-        <select
-          className="text-sm border rounded px-2 py-1"
-          value={year}
-          onChange={(e) => setYear(Number(e.target.value))}
+    <div
+      className="mcj-recharts-area"
+      style={{ width: "100%", height: 320, minWidth: 0 }}
+    >
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 8, right: 12, left: 0, bottom: 8 }}
         >
-          {yearOptions.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
+          <CartesianGrid
+            stroke="#e5e7eb"
+            strokeDasharray="3 3"
+            vertical={false}
+          />
+          <XAxis
+            dataKey="month"
+            tick={{ fontSize: 11, fill: "#64748b" }}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            width={70}
+            tick={{ fontSize: 11, fill: "#64748b" }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) =>
+              `$${Number(value).toLocaleString("en-US")}`
+            }
+          />
+          <Tooltip
+            formatter={(value) => formatCurrency(value)}
+            contentStyle={{ borderRadius: 10, borderColor: "#e2e8f0" }}
+          />
+          <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
+          {categories.map((category, index) => (
+            <Bar
+              key={category}
+              name={category}
+              dataKey={category}
+              stackId="expenses"
+              fill={
+                CATEGORY_COLORS[category] ||
+                FALLBACK_COLORS[index % FALLBACK_COLORS.length]
+              }
+            />
           ))}
-        </select>
-      </div>
-
-      {/* Chart */}
-      <div
-        className="p-4"
-        style={{
-          height: isMobile ? 420 : 360, // más alto en mobile
-        }}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{
-              top: 8,
-              right: isMobile ? 10 : 24,
-              left: isMobile ? 4 : 20,
-              bottom: 8,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-
-            <XAxis dataKey="month" tick={{ fontSize: isMobile ? 10 : 12 }} />
-
-            <YAxis
-              width={isMobile ? 40 : 80}
-              tick={{ fontSize: isMobile ? 10 : 12 }}
-              tickFormatter={(v) => formatCurrency(v)}
-            />
-
-            <Tooltip formatter={(v) => formatCurrency(v)} />
-            <Legend
-              wrapperStyle={{
-                fontSize: isMobile ? 10 : 12,
-                paddingTop: 8,
-              }}
-            />
-
-            {categories.map((cat, index) => {
-              const color =
-                CATEGORY_COLORS[cat] ||
-                FALLBACK_COLORS[index % FALLBACK_COLORS.length];
-              return <Bar key={cat} dataKey={cat} stackId="a" fill={color} />;
-            })}
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }

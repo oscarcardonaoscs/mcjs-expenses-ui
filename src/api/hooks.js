@@ -153,3 +153,59 @@ export function useAnnualExpensesByCategory(year) {
     enabled: !!year,
   });
 }
+
+// ---------- Financial Dashboard ----------
+export function useFinancialSummary(year, month) {
+  return useQuery({
+    queryKey: ["financial-summary", year, month],
+    queryFn: async () => {
+      const { data } = await api.get("/dashboard/financial-summary", {
+        params: { year, month },
+      });
+
+      return data;
+    },
+    enabled:
+      Number.isInteger(year) &&
+      Number.isInteger(month) &&
+      month >= 1 &&
+      month <= 12,
+    staleTime: 60 * 1000,
+  });
+}
+
+// ---------- Income vs Expenses ----------
+export function useIncomeExpenses(year) {
+  return useQuery({
+    queryKey: ["income-expenses", year],
+    queryFn: async () => {
+      const { data } = await api.get("/dashboard/income-expenses", {
+        params: { year },
+      });
+
+      return data;
+    },
+    enabled: Number.isInteger(year) && year >= 2000,
+    staleTime: 60 * 1000,
+  });
+}
+
+// ---------- Income by Service Type ----------
+export function useIncomeByServiceType(year, month) {
+  return useQuery({
+    queryKey: ["income-by-service-type", year, month],
+    queryFn: async () => {
+      const { data } = await api.get("/dashboard/income-by-service-type", {
+        params: { year, month },
+      });
+
+      return data;
+    },
+    enabled:
+      Number.isInteger(year) &&
+      Number.isInteger(month) &&
+      month >= 1 &&
+      month <= 12,
+    staleTime: 60 * 1000,
+  });
+}
