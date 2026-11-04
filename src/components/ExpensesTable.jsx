@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { formatCurrency, formatDateMDY } from "@/lib/format";
+import "../styles/mcj-ui.css";
 import "./ExpensesTable.css";
 
 function formatPayment(method, last4) {
@@ -30,8 +31,7 @@ function getItemName(item) {
 }
 
 function getItemDescription(item) {
-  const conceptName =
-    item.expense_concept_name || item.expense_concept?.name || "";
+  const conceptName = item.expense_concept_name || item.expense_concept?.name || "";
   const description = item.description?.trim() || "";
   if (!conceptName || !description) return null;
   return conceptName.trim().toLowerCase() === description.toLowerCase()
@@ -61,11 +61,7 @@ function getSummary(expense) {
 function ItemName({ itemName, itemDescription, strong = false }) {
   return (
     <div className="mcj-exp-item-name">
-      <div
-        className={
-          strong ? "mcj-exp-item-primary fw-semibold" : "mcj-exp-item-primary"
-        }
-      >
+      <div className={strong ? "mcj-exp-item-primary fw-semibold" : "mcj-exp-item-primary"}>
         {itemName}
       </div>
       {itemDescription && (
@@ -96,9 +92,7 @@ function ItemDetails({ lines }) {
             <span className="mcj-exp-amount">{formatCurrency(item.total)}</span>
           </div>
         ))}
-        <div className="mcj-exp-tax-note">
-          Item totals include allocated tax.
-        </div>
+        <div className="mcj-exp-tax-note">Item totals include allocated tax.</div>
       </div>
     </details>
   );
@@ -119,8 +113,7 @@ function ExpenseActions({ expense, onEdit, onDelete, isDeleting }) {
       if (
         !buttonRef.current?.contains(event.target) &&
         !menuRef.current?.contains(event.target)
-      )
-        setOpen(false);
+      ) setOpen(false);
     };
     const onKey = (event) => {
       if (event.key === "Escape") {
@@ -148,10 +141,9 @@ function ExpenseActions({ expense, onEdit, onDelete, isDeleting }) {
       const rect = buttonRef.current.getBoundingClientRect();
       const menuWidth = 164;
       const menuHeight = (onEdit ? 42 : 0) + (onDelete ? 42 : 0) + 12;
-      const top =
-        rect.bottom + menuHeight + 8 > window.innerHeight
-          ? Math.max(8, rect.top - menuHeight - 4)
-          : rect.bottom + 4;
+      const top = rect.bottom + menuHeight + 8 > window.innerHeight
+        ? Math.max(8, rect.top - menuHeight - 4)
+        : rect.bottom + 4;
       setPosition({
         top,
         right: Math.max(8, window.innerWidth - rect.right),
@@ -165,7 +157,7 @@ function ExpenseActions({ expense, onEdit, onDelete, isDeleting }) {
     <>
       <button
         type="button"
-        className="mcj-exp-action-trigger"
+        className="mcj-ui-action-trigger mcj-exp-action-trigger"
         ref={buttonRef}
         onClick={toggleMenu}
         disabled={isDeleting}
@@ -174,77 +166,55 @@ function ExpenseActions({ expense, onEdit, onDelete, isDeleting }) {
         aria-label="Expense actions"
         title="Expense actions"
       >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          aria-hidden="true"
-        >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <circle cx="12" cy="5" r="1.8" />
           <circle cx="12" cy="12" r="1.8" />
           <circle cx="12" cy="19" r="1.8" />
         </svg>
       </button>
-      {open &&
-        createPortal(
-          <div
-            className="mcj-exp-action-menu"
-            ref={menuRef}
-            style={{
-              position: "fixed",
-              top: position.top,
-              left: position.left,
-            }}
-            role="menu"
-            aria-label="Expense actions"
-          >
-            {onEdit && (
-              <button
-                type="button"
-                role="menuitem"
-                disabled={isDeleting}
-                onClick={() => {
-                  setOpen(false);
-                  onEdit(expense);
-                }}
-              >
-                <span aria-hidden="true">✎</span> Edit expense
-              </button>
-            )}
-            {onDelete && (
-              <button
-                type="button"
-                role="menuitem"
-                className="mcj-exp-delete"
-                disabled={isDeleting}
-                onClick={() => {
-                  setOpen(false);
-                  onDelete(expense);
-                }}
-              >
-                <span aria-hidden="true">×</span> Delete expense
-              </button>
-            )}
-          </div>,
-          document.body,
-        )}
+      {open && createPortal(
+        <div
+          className="mcj-ui-action-menu mcj-exp-action-menu"
+          ref={menuRef}
+          style={{ position: "fixed", top: position.top, left: position.left }}
+          role="menu"
+          aria-label="Expense actions"
+        >
+          {onEdit && (
+            <button
+              type="button"
+              role="menuitem"
+              disabled={isDeleting}
+              onClick={() => { setOpen(false); onEdit(expense); }}
+            >
+              <span aria-hidden="true">✎</span> Edit expense
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              role="menuitem"
+              className="mcj-ui-danger mcj-exp-delete"
+              disabled={isDeleting}
+              onClick={() => { setOpen(false); onDelete(expense); }}
+            >
+              <span aria-hidden="true">×</span> Delete expense
+            </button>
+          )}
+        </div>,
+        document.body
+      )}
     </>
   );
 }
 
-export function ExpensesTable({
-  items = [],
-  onEdit,
-  onDelete,
-  isDeleting = false,
-}) {
+export function ExpensesTable({ items = [], onEdit, onDelete, isDeleting = false }) {
   const hasActions = Boolean(onEdit || onDelete);
   return (
     <div className="mcj-expenses-table-root">
       <div className="mcj-exp-desktop d-none d-md-block">
-        <div className="mcj-exp-table-scroll">
-          <table className="mcj-exp-table">
+        <div className="mcj-ui-table-scroll mcj-exp-table-scroll">
+          <table className="mcj-ui-table mcj-exp-table">
             <colgroup>
               <col className="mcj-exp-col-date" />
               <col className="mcj-exp-col-category" />
@@ -264,11 +234,7 @@ export function ExpensesTable({
                 <th>Description / Items</th>
                 <th className="mcj-exp-number">Ticket Total</th>
                 <th>Payment</th>
-                {hasActions && (
-                  <th className="mcj-exp-actions-column">
-                    <span className="visually-hidden">Actions</span>
-                  </th>
-                )}
+                {hasActions && <th className="mcj-exp-actions-column"><span className="visually-hidden">Actions</span></th>}
               </tr>
             </thead>
             <tbody>
@@ -276,35 +242,20 @@ export function ExpensesTable({
                 const summary = getSummary(expense);
                 return (
                   <tr key={expense.id}>
-                    <td className="mcj-exp-date">
-                      {formatDateMDY(expense.date)}
-                    </td>
+                    <td className="mcj-exp-date">{formatDateMDY(expense.date)}</td>
                     <td>
-                      <span className="mcj-exp-category">
-                        {summary.categories}
-                      </span>
-                      {summary.isSplit && (
-                        <div className="mcj-exp-multiple">Multiple items</div>
-                      )}
+                      <span className="mcj-ui-badge mcj-exp-category">{summary.categories}</span>
+                      {summary.isSplit && <div className="mcj-exp-multiple">Multiple items</div>}
                     </td>
                     <td className="mcj-exp-muted">{summary.types}</td>
                     <td className="mcj-exp-vendor">{getVendor(expense)}</td>
                     <td className="mcj-exp-description">
-                      <ItemName
-                        itemName={summary.itemName}
-                        itemDescription={summary.itemDescription}
-                        strong
-                      />
+                      <ItemName itemName={summary.itemName} itemDescription={summary.itemDescription} strong />
                       <ItemDetails lines={summary.lines} />
                     </td>
-                    <td className="mcj-exp-number mcj-exp-total">
-                      {formatCurrency(expense.total)}
-                    </td>
+                    <td className="mcj-ui-amount mcj-exp-number mcj-exp-total">{formatCurrency(expense.total)}</td>
                     <td className="mcj-exp-muted mcj-exp-payment">
-                      {formatPayment(
-                        expense.payment_method,
-                        expense.payment_account_last4,
-                      )}
+                      {formatPayment(expense.payment_method, expense.payment_account_last4)}
                     </td>
                     {hasActions && (
                       <td className="mcj-exp-actions-column">
@@ -328,56 +279,27 @@ export function ExpensesTable({
         {items.map((expense) => {
           const summary = getSummary(expense);
           return (
-            <article className="mcj-exp-mobile-card" key={expense.id}>
+            <article className="mcj-ui-mobile-card mcj-exp-mobile-card" key={expense.id}>
               <div className="mcj-exp-mobile-top">
                 <div>
-                  <div className="mcj-exp-mobile-label">
-                    {formatDateMDY(expense.date)}
-                  </div>
-                  <div className="mcj-exp-mobile-vendor">
-                    {getVendor(expense)}
-                  </div>
+                  <div className="mcj-exp-mobile-label">{formatDateMDY(expense.date)}</div>
+                  <div className="mcj-exp-mobile-vendor">{getVendor(expense)}</div>
                 </div>
                 <div className="d-flex align-items-start gap-2">
-                  <div className="mcj-exp-mobile-total">
-                    {formatCurrency(expense.total)}
-                  </div>
+                  <div className="mcj-exp-mobile-total">{formatCurrency(expense.total)}</div>
                   {hasActions && (
-                    <ExpenseActions
-                      expense={expense}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                      isDeleting={isDeleting}
-                    />
+                    <ExpenseActions expense={expense} onEdit={onEdit} onDelete={onDelete} isDeleting={isDeleting} />
                   )}
                 </div>
               </div>
               <div className="mcj-exp-mobile-description">
-                <ItemName
-                  itemName={summary.itemName}
-                  itemDescription={summary.itemDescription}
-                  strong
-                />
+                <ItemName itemName={summary.itemName} itemDescription={summary.itemDescription} strong />
                 <ItemDetails lines={summary.lines} />
               </div>
               <div className="mcj-exp-mobile-meta">
-                <div>
-                  <span>Categories</span>
-                  <strong>{summary.categories}</strong>
-                </div>
-                <div>
-                  <span>Type</span>
-                  <strong>{summary.types}</strong>
-                </div>
-                <div>
-                  <span>Payment</span>
-                  <strong>
-                    {formatPayment(
-                      expense.payment_method,
-                      expense.payment_account_last4,
-                    )}
-                  </strong>
-                </div>
+                <div><span>Categories</span><strong>{summary.categories}</strong></div>
+                <div><span>Type</span><strong>{summary.types}</strong></div>
+                <div><span>Payment</span><strong>{formatPayment(expense.payment_method, expense.payment_account_last4)}</strong></div>
               </div>
             </article>
           );

@@ -31,9 +31,7 @@ function ClientsPage() {
       const name = client.name?.toLowerCase() ?? "";
       const phone = client.phone?.toLowerCase() ?? "";
       const email = client.email?.toLowerCase() ?? "";
-      return (
-        name.includes(query) || phone.includes(query) || email.includes(query)
-      );
+      return name.includes(query) || phone.includes(query) || email.includes(query);
     });
   }, [clients, searchTerm]);
 
@@ -112,33 +110,20 @@ function ClientsPage() {
       <div className="mcj-clients-page">
         <div className="mb-4">
           <div className="small mb-2">
-            <button
-              type="button"
-              className="btn btn-link p-0 text-decoration-none"
-              onClick={handleCancel}
-              disabled={formLoading}
-            >
+            <button type="button" className="btn btn-link p-0 text-decoration-none" onClick={handleCancel} disabled={formLoading}>
               Clients
             </button>
             <span className="text-muted"> / </span>
-            <span className="text-muted">
-              {editingClient ? "Edit Client" : "Add Client"}
-            </span>
+            <span className="text-muted">{editingClient ? "Edit Client" : "Add Client"}</span>
           </div>
-          <h1 className="h3 mb-1">
-            {editingClient ? "Edit Client" : "Add Client"}
-          </h1>
+          <h1 className="h3 mb-1">{editingClient ? "Edit Client" : "Add Client"}</h1>
           <p className="mb-0 text-muted">
             {editingClient
               ? "Update this client's information."
               : "Create a new client for helper time entries and future location management."}
           </p>
         </div>
-        {error && (
-          <div className="alert alert-danger" role="alert">
-            {error}
-          </div>
-        )}
+        {error && <div className="alert alert-danger" role="alert">{error}</div>}
         <ClientForm
           initialData={editingClient}
           loading={formLoading}
@@ -157,28 +142,17 @@ function ClientsPage() {
           <h1>Clients</h1>
           <p>Manage the client catalog used for helper time entries.</p>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary mcj-clients-add"
-          onClick={handleNew}
-          disabled={loading}
-        >
+        <button type="button" className="btn btn-primary mcj-clients-add" onClick={handleNew} disabled={loading}>
           <span aria-hidden="true">+ </span> Add Client
         </button>
       </div>
 
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
-      <section className="mcj-clients-search-panel" aria-label="Search clients">
+      <section className="mcj-ui-filter-panel mcj-clients-search-panel" aria-label="Search clients">
         <div className="mcj-clients-search-top">
           <label htmlFor="client-search">Search Clients</label>
-          <span className="mcj-clients-count">
-            Showing {filteredClients.length} of {clients.length} clients
-          </span>
+          <span className="mcj-clients-count">Showing {filteredClients.length} of {clients.length} clients</span>
         </div>
         <div className="mcj-clients-search-controls">
           <input
@@ -190,12 +164,7 @@ function ClientsPage() {
             placeholder="Search by name, phone, or email..."
             disabled={loading}
           />
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
-            onClick={() => setSearchTerm("")}
-            disabled={loading || !searchTerm}
-          >
+          <button type="button" className="btn btn-outline-secondary" onClick={() => setSearchTerm("")} disabled={loading || !searchTerm}>
             Clear
           </button>
         </div>

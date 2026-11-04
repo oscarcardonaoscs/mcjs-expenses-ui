@@ -1,12 +1,7 @@
+/* Module-specific exceptions. Common Modern Compact styles live in src/styles/mcj-ui.css. */
 /* Clients Modern Compact — isolated from other tables. */
 .mcj-clients-table-root { font-size: 13px; color: #1e293b; }
-.mcj-clients-table-shell { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 2px 8px rgba(15,23,42,.035); overflow: hidden; }
-.mcj-clients-table-scroll { width: 100%; overflow-x: auto; }
 .mcj-clients-table { width: 100%; min-width: 690px; border-collapse: separate; border-spacing: 0; margin: 0; table-layout: fixed; }
-.mcj-clients-table th { background: #f8fafc; color: #64748b; text-transform: uppercase; letter-spacing: .045em; font-weight: 700; font-size: 11px; padding: 14px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
-.mcj-clients-table td { border-bottom: 1px solid #edf1f5; padding: 14px 12px; vertical-align: middle; overflow-wrap: anywhere; }
-.mcj-clients-table tbody tr:last-child td { border-bottom: 0; }
-.mcj-clients-table tbody tr:hover td { background: #f8fbff; }
 .mcj-clients-table th:nth-child(1) { width: 6%; }
 .mcj-clients-table th:nth-child(2) { width: 39%; }
 .mcj-clients-table th:nth-child(3) { width: 16%; }
@@ -24,20 +19,14 @@
 .mcj-client-status.is-active { background: #ecfdf5; color: #047857; }
 .mcj-client-status.is-inactive { background: #f1f5f9; color: #64748b; }
 .mcj-client-actions-head, .mcj-client-actions-cell { text-align: center !important; }
-.mcj-client-action-trigger { width: 34px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; border: 1px solid transparent; background: transparent; color: #64748b; cursor: pointer; }
-.mcj-client-action-trigger:hover, .mcj-client-action-trigger[aria-expanded="true"] { background: #eef4ff; border-color: #dbeafe; color: #2563eb; }
-.mcj-client-action-trigger:focus-visible, .mcj-client-action-menu button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-.mcj-client-action-menu { position: fixed; width: 180px; z-index: 1100; padding: 5px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 12px 32px rgba(15,23,42,.15); }
-.mcj-client-action-menu button { width: 100%; display: flex; align-items: center; min-height: 38px; text-align: left; background: none; border: 0; border-radius: 6px; color: #334155; padding: 8px 10px; font-size: 13px; cursor: pointer; }
-.mcj-client-action-menu button:hover { background: #f1f5f9; }
-.mcj-client-action-menu .mcj-client-delete { color: #dc2626; }
-.mcj-client-action-menu .mcj-client-delete:hover { background: #fef2f2; }
 .mcj-clients-empty { padding: 36px 20px; text-align: center; color: #64748b; }
 .mcj-clients-mobile { display: flex; flex-direction: column; gap: 12px; }
-.mcj-client-mobile-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 6px rgba(15,23,42,.035); }
 .mcj-client-mobile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .mcj-client-mobile-identity { min-width: 0; }
 .mcj-client-mobile-meta { margin-top: 14px; border-top: 1px solid #edf1f5; padding-top: 12px; display: grid; gap: 10px; }
 .mcj-client-mobile-meta > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .mcj-client-mobile-meta > div > span:first-child { font-size: 12px; color: #64748b; }
 .mcj-client-mobile-meta strong { font-size: 12px; font-weight: 500; color: #334155; }
+
+/* Menu width is specific to this module; appearance is shared. */
+.mcj-client-action-menu { width: 180px; }
