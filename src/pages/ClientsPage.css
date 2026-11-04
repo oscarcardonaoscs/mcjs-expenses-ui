@@ -1,0 +1,18 @@
+/* Scoped Clients page design, coordinated with Expenses Modern Compact. */
+.mcj-clients-page { width: 100%; min-width: 0; }
+.mcj-clients-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 15px; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+.mcj-clients-header h1 { margin: 0 0 4px; color: #0f172a; font-size: 25px; font-weight: 600; }
+.mcj-clients-header p { margin: 0; color: #64748b; font-size: 13px; }
+.mcj-clients-add { flex-shrink: 0; min-width: 130px; }
+.mcj-clients-search-panel { border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; padding: 15px 16px; margin-bottom: 16px; }
+.mcj-clients-search-top { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 9px; }
+.mcj-clients-search-top label { font-size: 14px; font-weight: 600; color: #1e293b; }
+.mcj-clients-count { color: #64748b; font-size: 12px; }
+.mcj-clients-search-controls { display: flex; max-width: 850px; gap: 10px; }
+.mcj-clients-search-controls .form-control { min-width: 0; font-size: 13px; }
+.mcj-clients-search-controls .btn { min-width: 72px; flex-shrink: 0; }
+@media (max-width: 575.98px) {
+  .mcj-clients-header { align-items: stretch; }
+  .mcj-clients-add { width: 100%; }
+  .mcj-clients-search-top { flex-direction: column; gap: 3px; }
+}
