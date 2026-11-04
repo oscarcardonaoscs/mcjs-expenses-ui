@@ -1,0 +1,125 @@
+/* Expenses pilot styling. Scoped so it cannot restyle tables elsewhere. */
+.mcj-expenses-table-shell {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .035);
+  overflow: hidden;
+}
+.mcj-expenses-table-root { color: #1e293b; font-size: 13px; }
+.mcj-exp-table-scroll { width: 100%; overflow-x: auto; }
+.mcj-exp-table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 0; }
+.mcj-exp-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 15px 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.mcj-exp-table td {
+  padding: 15px 14px;
+  border-bottom: 1px solid #edf1f5;
+  vertical-align: middle;
+  line-height: 1.45;
+}
+.mcj-exp-table tbody tr:last-child td { border-bottom: 0; }
+.mcj-exp-table tbody tr:hover td { background: #f8fbff; }
+.mcj-exp-table td, .mcj-exp-table th { text-align: left; }
+.mcj-exp-table .mcj-exp-number { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mcj-exp-table .mcj-exp-date { color: #475569; white-space: nowrap; }
+.mcj-exp-table .mcj-exp-muted { color: #64748b; }
+.mcj-exp-table .mcj-exp-vendor { font-weight: 600; color: #334155; }
+.mcj-exp-table .mcj-exp-description { min-width: 180px; max-width: 340px; }
+.mcj-exp-item-primary { overflow-wrap: anywhere; color: #1e293b; }
+.mcj-exp-item-secondary { margin-top: 4px; font-size: 12px; color: #64748b; overflow-wrap: anywhere; font-weight: 400; }
+.mcj-exp-category {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.mcj-exp-multiple { margin-top: 6px; font-size: 11px; color: #64748b; }
+.mcj-exp-table .mcj-exp-total { font-size: 14px; font-weight: 700; color: #0f172a; }
+.mcj-exp-table .mcj-exp-payment { white-space: nowrap; }
+.mcj-exp-table .mcj-exp-actions-column { width: 58px; padding-right: 12px; text-align: center; }
+.mcj-exp-details { margin-top: 7px; }
+.mcj-exp-details > summary { color: #2563eb; font-weight: 600; cursor: pointer; font-size: 12px; width: fit-content; }
+.mcj-exp-details > summary:hover { color: #1d4ed8; }
+.mcj-exp-lines { margin-top: 10px; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 240px; }
+.mcj-exp-line { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #e2e8f0; }
+.mcj-exp-line:first-child { padding-top: 0; }
+.mcj-exp-line:last-of-type { border-bottom: 0; padding-bottom: 0; }
+.mcj-exp-line-content { min-width: 0; }
+.mcj-exp-amount { white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mcj-exp-tax-note { color: #94a3b8; font-size: 11px; margin-top: 9px; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+.mcj-exp-action-trigger { width: 34px; height: 32px; border-radius: 7px; border: 1px solid transparent; background: transparent; color: #64748b; font-weight: 700; letter-spacing: 2px; line-height: 1; cursor: pointer; }
+.mcj-exp-action-trigger:hover, .mcj-exp-action-trigger[aria-expanded="true"] { background: #eef4ff; border-color: #dbeafe; color: #2563eb; }
+.mcj-exp-action-trigger:focus-visible, .mcj-exp-action-menu button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.mcj-exp-action-trigger:disabled { opacity: .45; cursor: not-allowed; }
+.mcj-exp-action-menu { width: 164px; z-index: 1100; padding: 5px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 12px 32px rgba(15,23,42,.15); }
+.mcj-exp-action-menu button { width: 100%; display: flex; align-items: center; gap: 9px; min-height: 38px; text-align: left; background: none; border: 0; border-radius: 6px; color: #334155; padding: 8px 10px; font-size: 13px; cursor: pointer; }
+.mcj-exp-action-menu button:hover { background: #f1f5f9; }
+.mcj-exp-action-menu .mcj-exp-delete { color: #dc2626; }
+.mcj-exp-action-menu .mcj-exp-delete:hover { background: #fef2f2; }
+.mcj-exp-mobile { display: flex; flex-direction: column; gap: 12px; }
+.mcj-exp-mobile-card { border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; padding: 16px; box-shadow: 0 2px 6px rgba(15,23,42,.035); }
+.mcj-exp-mobile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.mcj-exp-mobile-label { font-size: 12px; color: #64748b; }
+.mcj-exp-mobile-vendor { font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 3px; overflow-wrap: anywhere; }
+.mcj-exp-mobile-total { font-weight: 700; font-size: 17px; color: #0f172a; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mcj-exp-mobile-description { padding: 14px 0; margin-top: 12px; border-top: 1px solid #edf1f5; border-bottom: 1px solid #edf1f5; }
+.mcj-exp-mobile-meta { padding-top: 12px; display: grid; gap: 9px; }
+.mcj-exp-mobile-meta > div { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.mcj-exp-mobile-meta span { color: #64748b; font-size: 12px; }
+.mcj-exp-mobile-meta strong { text-align: right; font-size: 12px; color: #334155; font-weight: 500; overflow-wrap: anywhere; }
+@media (max-width: 767.98px) {
+  .mcj-expenses-table-shell { border: 0; background: transparent; box-shadow: none; overflow: visible; }
+}
+
+/* ============================================================
+   Expenses compact pilot — scoped to Expenses only
+   ============================================================ */
+.mcj-expenses-page .mcj-exp-filter-panel,
+.mcj-expenses-page .mcj-exp-search-panel {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+.mcj-expenses-page .mcj-exp-filter-panel .form-label {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.mcj-expenses-page .mcj-exp-filter-panel .form-select {
+  min-height: 36px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  font-size: 13px;
+}
+.mcj-expenses-page .mcj-exp-clear-filters { min-width: 115px; }
+.mcj-expenses-page .mcj-exp-search-input { min-width: 0; }
+.mcj-expenses-page .mcj-exp-search-button { flex-shrink: 0; white-space: nowrap; }
+/* Allow the description/items column to consume remaining width. */
+.mcj-exp-table { table-layout: fixed; min-width: 980px; }
+.mcj-exp-col-date { width: 9%; }
+.mcj-exp-col-category { width: 15%; }
+.mcj-exp-col-type { width: 9%; }
+.mcj-exp-col-vendor { width: 13%; }
+.mcj-exp-col-description { width: 28%; }
+.mcj-exp-col-total { width: 10%; }
+.mcj-exp-col-payment { width: 11%; }
+.mcj-exp-col-actions { width: 5%; }
+.mcj-exp-table th { padding: 13px 10px; }
+.mcj-exp-table td { padding: 13px 10px; overflow-wrap: anywhere; }
+.mcj-exp-table .mcj-exp-description { min-width: 0; max-width: none; }
+.mcj-exp-table .mcj-exp-actions-column { width: auto; padding-left: 2px; padding-right: 6px; }
+@media (max-width: 575.98px) {
+  .mcj-expenses-page .mcj-exp-clear-filters { width: auto; }
+  .mcj-expenses-page .mcj-exp-search-button { width: 100%; }
+}

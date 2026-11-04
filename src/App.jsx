@@ -223,9 +223,10 @@ export default function App() {
       </aside>
 
       <main className="flex-grow-1 d-flex flex-column" style={{ minWidth: 0 }}>
-        <header className="navbar bg-white border-bottom py-2 px-3 d-flex align-items-center gap-2">
+        {/* Mobile navigation only */}
+        <header className="navbar bg-white border-bottom py-2 px-3 d-flex d-md-none align-items-center gap-2">
           <button
-            className="navbar-toggler d-md-none"
+            className="navbar-toggler"
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#appSidebar"

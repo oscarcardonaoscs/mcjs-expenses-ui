@@ -1,14 +1,10 @@
 /* Styles scoped to the financial Dashboard; independent of Tailwind. */
 .mcj-dashboard {
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
+  max-width: none;
+  margin: 0;
+  padding: 20px;
   box-sizing: border-box;
-  color: #17202f;
 }
 .mcj-dashboard *,
 .mcj-dashboard *::before,

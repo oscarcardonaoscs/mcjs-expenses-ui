@@ -1,31 +1,51 @@
 import { useState, useMemo } from "react";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { api } from "@/lib/api";
+
 import ExpenseForm from "@/components/ExpenseForm";
+
 import { ExpensesTable } from "@/components/ExpensesTable";
 
 // ==========================================
+
 // MONTHS
+
 // ==========================================
 
 const MONTHS = [
   { value: "all", label: "All months" },
+
   { value: 1, label: "January" },
+
   { value: 2, label: "February" },
+
   { value: 3, label: "March" },
+
   { value: 4, label: "April" },
+
   { value: 5, label: "May" },
+
   { value: 6, label: "June" },
+
   { value: 7, label: "July" },
+
   { value: 8, label: "August" },
+
   { value: 9, label: "September" },
+
   { value: 10, label: "October" },
+
   { value: 11, label: "November" },
+
   { value: 12, label: "December" },
 ];
 
 // ==========================================
+
 // INITIAL FILTERS
+
 // ==========================================
 
 function initialFilters() {
@@ -33,16 +53,23 @@ function initialFilters() {
 
   return {
     year: today.getFullYear(),
+
     month: today.getMonth() + 1,
+
     categoryId: "all",
+
     vendor: "all",
+
     payment: "all",
+
     type: "all",
   };
 }
 
 // ==========================================
+
 // HELPERS
+
 // ==========================================
 
 function getExpenseItems(expense) {
@@ -61,6 +88,7 @@ function getItemType(item) {
 
 function getPayment(expense) {
   const method = expense.payment_method || "";
+
   const last4 = expense.payment_account_last4 || "";
 
   if (!method) return "";
@@ -75,29 +103,39 @@ function uniqueSorted(values) {
 }
 
 // ==========================================
+
 // MAIN COMPONENT
+
 // ==========================================
 
 export default function Expenses() {
   const qc = useQueryClient();
 
   // Filtros automáticos
+
   const [filters, setFilters] = useState(initialFilters);
 
   // Búsqueda específica
+
   const [searchText, setSearchText] = useState("");
+
   const [appliedSearch, setAppliedSearch] = useState("");
 
   // Modos
+
   const [mode, setMode] = useState("list");
+
   const [expenseToEdit, setExpenseToEdit] = useState(null);
 
   // ==========================================
+
   // YEARS
+
   // ==========================================
 
   const years = useMemo(() => {
     const current = new Date().getFullYear();
+
     const result = [];
 
     for (let year = current; year >= 2025; year--) {
@@ -108,15 +146,20 @@ export default function Expenses() {
   }, []);
 
   // ==========================================
+
   // CATEGORIES
+
   // ==========================================
 
   const {
     data: categories = [],
+
     isLoading: isLoadingCategories,
+
     isError: isErrorCategories,
   } = useQuery({
     queryKey: ["categories"],
+
     queryFn: async () => {
       const { data } = await api.get("/categories");
 
@@ -127,29 +170,39 @@ export default function Expenses() {
   });
 
   // ==========================================
+
   // EXPENSES
+
   // ==========================================
 
   const {
     data = [],
+
     isLoading,
+
     isError,
+
     error,
   } = useQuery({
     queryKey: ["expenses", filters.year, filters.month, filters.categoryId],
+
     queryFn: async () => {
       // Year siempre se envía.
+
       const params = {
         year: filters.year,
       };
 
       // Month se envía solamente cuando
+
       // seleccionamos un mes específico.
+
       if (filters.month !== "all") {
         params.month = filters.month;
       }
 
       // Category
+
       if (filters.categoryId !== "all") {
         params.category_id = filters.categoryId;
       }
@@ -160,16 +213,20 @@ export default function Expenses() {
 
       return (data.items ?? []).map((expense) => ({
         ...expense,
+
         category: expense.category_name
           ? { name: expense.category_name }
           : null,
+
         vendor: expense.vendor_name ? { name: expense.vendor_name } : null,
       }));
     },
   });
 
   // ==========================================
+
   // AVAILABLE FILTER OPTIONS
+
   // ==========================================
 
   const vendors = useMemo(() => uniqueSorted(data.map(getVendor)), [data]);
@@ -181,11 +238,14 @@ export default function Expenses() {
       uniqueSorted(
         data.flatMap((expense) => getExpenseItems(expense).map(getItemType)),
       ),
+
     [data],
   );
 
   // ==========================================
+
   // LOCAL FILTERS
+
   // ==========================================
 
   const filteredExpenses = useMemo(() => {
@@ -193,11 +253,13 @@ export default function Expenses() {
 
     return data.filter((expense) => {
       // Vendor
+
       if (filters.vendor !== "all" && getVendor(expense) !== filters.vendor) {
         return false;
       }
 
       // Payment
+
       if (
         filters.payment !== "all" &&
         getPayment(expense) !== filters.payment
@@ -208,6 +270,7 @@ export default function Expenses() {
       const items = getExpenseItems(expense);
 
       // Type
+
       if (
         filters.type !== "all" &&
         !items.some((item) => getItemType(item) === filters.type)
@@ -216,6 +279,7 @@ export default function Expenses() {
       }
 
       // Search by Item - Expense Concepts
+
       if (term) {
         const matchesItem = items.some((item) => {
           const conceptName =
@@ -232,7 +296,9 @@ export default function Expenses() {
   }, [data, filters, appliedSearch]);
 
   // ==========================================
+
   // CREATE / UPDATE
+
   // ==========================================
 
   const { mutateAsync, isPending } = useMutation({
@@ -256,17 +322,20 @@ export default function Expenses() {
       } catch (err) {
         console.error(
           "[Expenses mutation error detail]",
+
           JSON.stringify(err?.response?.data?.detail, null, 2),
         );
 
         console.error(
           "[Expenses mutation error full]",
+
           err?.response?.data ?? err,
         );
 
         throw err;
       }
     },
+
     onSuccess: () => {
       qc.invalidateQueries({
         queryKey: ["expenses"],
@@ -275,7 +344,9 @@ export default function Expenses() {
   });
 
   // ==========================================
+
   // DELETE
+
   // ==========================================
 
   const { mutateAsync: deleteExpenseAsync, isPending: isDeleting } =
@@ -285,6 +356,7 @@ export default function Expenses() {
 
         return data;
       },
+
       onSuccess: () => {
         qc.invalidateQueries({
           queryKey: ["expenses"],
@@ -293,26 +365,32 @@ export default function Expenses() {
     });
 
   // ==========================================
+
   // HANDLERS
+
   // ==========================================
 
   const startCreate = () => {
     setExpenseToEdit(null);
+
     setMode("create");
   };
 
   const startEdit = (expense) => {
     setExpenseToEdit(expense);
+
     setMode("edit");
 
     window.scrollTo({
       top: 0,
+
       behavior: "smooth",
     });
   };
 
   const cancelForm = () => {
     setExpenseToEdit(null);
+
     setMode("list");
   };
 
@@ -320,6 +398,7 @@ export default function Expenses() {
     await mutateAsync(payload);
 
     setExpenseToEdit(null);
+
     setMode("list");
   };
 
@@ -334,33 +413,43 @@ export default function Expenses() {
   };
 
   // Filtros automáticos
+
   const updateFilter = (field, value) => {
     setFilters((prev) => ({
       ...prev,
+
       [field]: value,
     }));
   };
 
   // Clear Filters
+
   const clearFilters = () => {
     setFilters(initialFilters());
+
     setSearchText("");
+
     setAppliedSearch("");
   };
 
   // Search by Item
+
   const searchItems = (event) => {
     event?.preventDefault();
+
     setAppliedSearch(searchText.trim());
   };
 
   const clearItemSearch = () => {
     setSearchText("");
+
     setAppliedSearch("");
   };
 
   // ==========================================
+
   // RESULTS SUMMARY
+
   // ==========================================
 
   const hasActiveFilters =
@@ -380,14 +469,16 @@ export default function Expenses() {
       : `${currentMonthLabel} ${filters.year}`;
 
   // ==========================================
+
   // RENDER
+
   // ==========================================
 
   return (
-    <div className="px-2 px-md-0 mt-3">
+    <div className="px-2 px-md-0 mt-2 mcj-expenses-page">
       {/* HEADER */}
 
-      <div className="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
+      <div className="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
         <h1 className="h3 m-0">Expenses</h1>
 
         {mode === "list" && (
@@ -416,17 +507,31 @@ export default function Expenses() {
         <>
           {/* ================= FILTERS ================= */}
 
-          <section className="border rounded-3 bg-light p-3 mb-3">
-            <div className="d-flex align-items-center gap-2 mb-3">
-              <span aria-hidden="true">⚑</span>
+          <section className="mcj-exp-filter-panel border rounded-3 bg-light p-3 mb-3">
+            <div className="d-flex align-items-center gap-2 mb-2">
+              <svg
+                aria-hidden="true"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4 7h16M7 12h10M10 17h4" />
+                <circle cx="8" cy="7" r="2" fill="#f8fafc" />
+                <circle cx="15" cy="12" r="2" fill="#f8fafc" />
+              </svg>
 
-              <h2 className="h5 fw-bold m-0">Filters</h2>
+              <h2 className="h6 fw-bold m-0">Filters</h2>
             </div>
 
-            <div className="row g-3">
+            <div className="row g-2">
               {/* YEAR */}
 
-              <div className="col-6 col-lg-3">
+              <div className="col-12 col-sm-6 col-lg-4">
                 <label
                   htmlFor="expense-year"
                   className="form-label fw-semibold"
@@ -450,7 +555,7 @@ export default function Expenses() {
 
               {/* MONTH */}
 
-              <div className="col-6 col-lg-3">
+              <div className="col-12 col-sm-6 col-lg-4">
                 <label
                   htmlFor="expense-month"
                   className="form-label fw-semibold"
@@ -467,6 +572,7 @@ export default function Expenses() {
 
                     updateFilter(
                       "month",
+
                       value === "all" ? "all" : Number(value),
                     );
                   }}
@@ -481,7 +587,7 @@ export default function Expenses() {
 
               {/* CATEGORY */}
 
-              <div className="col-6 col-lg-3">
+              <div className="col-12 col-sm-6 col-lg-4">
                 <label
                   htmlFor="expense-category"
                   className="form-label fw-semibold"
@@ -508,7 +614,7 @@ export default function Expenses() {
 
               {/* VENDOR */}
 
-              <div className="col-6 col-lg-3">
+              <div className="col-12 col-sm-6 col-lg-4">
                 <label
                   htmlFor="expense-vendor"
                   className="form-label fw-semibold"
@@ -539,7 +645,7 @@ export default function Expenses() {
 
               {/* PAYMENT */}
 
-              <div className="col-6 col-lg-3">
+              <div className="col-12 col-sm-6 col-lg-4">
                 <label
                   htmlFor="expense-payment"
                   className="form-label fw-semibold"
@@ -570,7 +676,7 @@ export default function Expenses() {
 
               {/* TYPE */}
 
-              <div className="col-6 col-lg-3">
+              <div className="col-12 col-sm-6 col-lg-4">
                 <label
                   htmlFor="expense-type"
                   className="form-label fw-semibold"
@@ -597,80 +703,62 @@ export default function Expenses() {
                   )}
                 </select>
               </div>
-
-              {/* CLEAR FILTERS */}
-
-              <div className="col-12 col-lg-6">
-                <div className="d-flex align-items-end justify-content-lg-end h-100">
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={clearFilters}
-                  >
-                    Clear Filters
-                  </button>
-                </div>
-              </div>
+            </div>
+            <div className="d-flex justify-content-end mt-2">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary mcj-exp-clear-filters"
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </button>
             </div>
           </section>
 
           {/* ================= SEARCH BY ITEM ================= */}
 
-          <section className="border rounded-3 bg-light p-3 mb-3">
-            <div className="d-flex align-items-start gap-2 mb-3">
-              <span
-                className="fs-5"
+          <section className="mcj-exp-search-panel border rounded-3 bg-light p-3 mb-3">
+            <div className="d-flex align-items-center gap-2 mb-2">
+              <svg
                 aria-hidden="true"
-                style={{ lineHeight: 1.2 }}
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                ⌕
-              </span>
-
-              <div>
-                <h2 className="h5 fw-bold mb-1">Search by Item</h2>
-
-                <p className="text-muted small mb-0">
-                  Search for specific products within the selected expense
-                  period.
-                </p>
-              </div>
+                <circle cx="10.8" cy="10.8" r="6.8" />
+                <path d="m16 16 5 5" />
+              </svg>
+              <h2 className="h6 fw-bold m-0">Search by Item</h2>
             </div>
-
             <form onSubmit={searchItems}>
-              <div className="row g-2 align-items-center">
-                {/* SEARCH INPUT */}
-
-                <div className="col-12 col-lg-8">
-                  <input
-                    type="search"
-                    className="form-control"
-                    placeholder="Search an item, e.g. duster, gloves..."
-                    aria-label="Search by item description"
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                  />
-                </div>
-
-                {/* SEARCH BUTTON */}
-
-                <div className="col-8 col-lg-auto">
-                  <button type="submit" className="btn btn-success w-100">
-                    Search Item
-                  </button>
-                </div>
-
-                {/* CLEAR SEARCH */}
-
+              <div className="d-flex flex-column flex-sm-row gap-2">
+                <input
+                  type="search"
+                  className="form-control flex-grow-1 mcj-exp-search-input"
+                  placeholder="Search an item, e.g. duster, gloves..."
+                  aria-label="Search by item description"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="btn btn-success mcj-exp-search-button"
+                >
+                  Search Item
+                </button>
                 {appliedSearch && (
-                  <div className="col-4 col-lg-auto">
-                    <button
-                      type="button"
-                      className="btn btn-outline-secondary w-100"
-                      onClick={clearItemSearch}
-                    >
-                      Clear
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={clearItemSearch}
+                  >
+                    Clear
+                  </button>
                 )}
               </div>
             </form>
@@ -726,7 +814,7 @@ export default function Expenses() {
               </p>
             </div>
           ) : (
-            <div className="border rounded-3 p-2 p-md-3 bg-white">
+            <div className="mcj-expenses-table-shell">
               <ExpensesTable
                 items={filteredExpenses}
                 onEdit={startEdit}
