@@ -11,6 +11,7 @@ import {
   markHelperPayrollPeriodPaid,
   updateHelperPayrollPeriod,
 } from "../../services/helperPayrollPeriodsService";
+import "../../styles/mcj-ui.css";
 
 function HelperPayrollPeriodsPage() {
   const [helpers, setHelpers] = useState([]);
@@ -20,10 +21,7 @@ function HelperPayrollPeriodsPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const [filters, setFilters] = useState({
-    helper_id: "",
-    status: "",
-  });
+  const [filters, setFilters] = useState({ helper_id: "", status: "" });
 
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState("create");
@@ -53,12 +51,10 @@ function HelperPayrollPeriodsPage() {
     try {
       setLoading(true);
       setError("");
-
       const data = await getHelperPayrollPeriods({
         helper_id: filters.helper_id || undefined,
         status: filters.status || undefined,
       });
-
       setPayrollPeriods(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message || "Failed to load payroll periods.");
@@ -69,11 +65,7 @@ function HelperPayrollPeriodsPage() {
 
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
-
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleNew = () => {
@@ -90,9 +82,7 @@ function HelperPayrollPeriodsPage() {
       setFormLoading(true);
       setError("");
       setSuccessMessage("");
-
       const fullPayroll = await getHelperPayrollPeriod(payroll.id);
-
       setSelectedPayroll(fullPayroll);
       setFormMode("edit");
       setShowForm(true);
@@ -109,9 +99,7 @@ function HelperPayrollPeriodsPage() {
       setFormLoading(true);
       setError("");
       setSuccessMessage("");
-
       const fullPayroll = await getHelperPayrollPeriod(payroll.id);
-
       setDetailsPayroll(fullPayroll);
       setShowDetails(true);
     } catch (err) {
@@ -126,9 +114,7 @@ function HelperPayrollPeriodsPage() {
       setFormLoading(true);
       setError("");
       setSuccessMessage("");
-
       await generateHelperPayrollPeriod(payload);
-
       setShowForm(false);
       setSelectedPayroll(null);
       setSuccessMessage("Payroll period generated successfully.");
@@ -145,9 +131,7 @@ function HelperPayrollPeriodsPage() {
       setFormLoading(true);
       setError("");
       setSuccessMessage("");
-
       await updateHelperPayrollPeriod(payrollId, payload);
-
       setShowForm(false);
       setSelectedPayroll(null);
       setSuccessMessage("Payroll period updated successfully.");
@@ -163,13 +147,11 @@ function HelperPayrollPeriodsPage() {
     const confirmed = window.confirm(
       "Are you sure you want to delete this payroll period?",
     );
-
     if (!confirmed) return;
 
     try {
       setError("");
       setSuccessMessage("");
-
       await deleteHelperPayrollPeriod(payroll.id);
       setSuccessMessage("Payroll period deleted successfully.");
       await loadPayrollPeriods();
@@ -183,17 +165,12 @@ function HelperPayrollPeriodsPage() {
       "Enter pay date (YYYY-MM-DD):",
       payroll.pay_date || new Date().toISOString().slice(0, 10),
     );
-
     if (!payDate) return;
 
     try {
       setError("");
       setSuccessMessage("");
-
-      await markHelperPayrollPeriodPaid(payroll.id, {
-        pay_date: payDate,
-      });
-
+      await markHelperPayrollPeriodPaid(payroll.id, { pay_date: payDate });
       setSuccessMessage("Payroll period marked as paid.");
       await loadPayrollPeriods();
     } catch (err) {
@@ -202,92 +179,99 @@ function HelperPayrollPeriodsPage() {
   };
 
   return (
-    <div className="container-fluid py-3">
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            <div>
-              <h1 className="h3 mb-1 text-gray-800">Helper Payroll Periods</h1>
-              <p className="text-muted mb-0">
-                Generate, review, and manage helper payroll periods.
-              </p>
-            </div>
-
-            <div className="w-100 w-md-auto">
-              <button
-                type="button"
-                className="btn btn-primary w-100"
-                onClick={handleNew}
-              >
-                New Payroll Period
-              </button>
-            </div>
-          </div>
+    <div className="w-100">
+      <header className="mcj-page-header flex-wrap">
+        <div>
+          <h1 className="mcj-page-title">Helper Payroll Periods</h1>
+          <p className="mcj-page-subtitle">
+            Generate, review, and manage helper payroll periods.
+          </p>
         </div>
-      </div>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleNew}
+          disabled={formLoading}
+        >
+          <span className="me-1" aria-hidden="true">
+            +
+          </span>{" "}
+          New Payroll Period
+        </button>
+      </header>
 
       {error && (
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
       )}
-
       {successMessage && (
-        <div className="alert alert-success" role="alert">
+        <div className="alert alert-success" role="status">
           {successMessage}
         </div>
       )}
 
-      <div className="card shadow-sm mb-4">
-        <div className="card-header py-3">
-          <h6 className="m-0 fw-bold text-primary">Filters</h6>
+      <section
+        className="mcj-ui-panel mcj-ui-filter-panel p-3 mb-3"
+        aria-label="Payroll filters"
+      >
+        <div className="d-flex align-items-center gap-2 mb-3">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M7 12h10M10 17h4" />
+          </svg>
+          <h2 className="h6 fw-semibold mb-0">Filters</h2>
         </div>
-
-        <div className="card-body">
-          <div className="row g-3">
-            <div className="col-12 col-md-4">
-              <label htmlFor="helper_id" className="form-label">
-                Helper
-              </label>
-              <select
-                id="helper_id"
-                name="helper_id"
-                className="form-select"
-                value={filters.helper_id}
-                onChange={handleFilterChange}
-              >
-                <option value="">All Helpers</option>
-                {helpers.map((helper) => (
-                  <option key={helper.id} value={helper.id}>
-                    {[helper.first_name, helper.last_name]
-                      .filter(Boolean)
-                      .join(" ")}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-12 col-md-4">
-              <label htmlFor="status" className="form-label">
-                Status
-              </label>
-              <select
-                id="status"
-                name="status"
-                className="form-select"
-                value={filters.status}
-                onChange={handleFilterChange}
-              >
-                <option value="">All Statuses</option>
-                <option value="draft">Draft</option>
-                <option value="calculated">Calculated</option>
-                <option value="approved">Approved</option>
-                <option value="paid">Paid</option>
-              </select>
-            </div>
+        <div className="row g-2">
+          <div className="col-12 col-md-6 col-xl-4">
+            <label htmlFor="helper_id" className="form-label">
+              Helper
+            </label>
+            <select
+              id="helper_id"
+              name="helper_id"
+              className="form-select"
+              value={filters.helper_id}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Helpers</option>
+              {helpers.map((helper) => (
+                <option key={helper.id} value={helper.id}>
+                  {[helper.first_name, helper.last_name]
+                    .filter(Boolean)
+                    .join(" ")}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-12 col-md-6 col-xl-4">
+            <label htmlFor="status" className="form-label">
+              Status
+            </label>
+            <select
+              id="status"
+              name="status"
+              className="form-select"
+              value={filters.status}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Statuses</option>
+              <option value="draft">Draft</option>
+              <option value="calculated">Calculated</option>
+              <option value="approved">Approved</option>
+              <option value="paid">Paid</option>
+            </select>
           </div>
         </div>
-      </div>
+      </section>
 
       <HelperPayrollPeriodsTable
         payrollPeriods={payrollPeriods}
@@ -311,7 +295,6 @@ function HelperPayrollPeriodsPage() {
         onGenerate={handleGenerate}
         onUpdate={handleUpdate}
       />
-
       <HelperPayrollPeriodDetailsModal
         show={showDetails}
         payroll={detailsPayroll}

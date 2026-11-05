@@ -406,7 +406,7 @@ export default function Dashboard() {
   return (
     <div className="mcj-dashboard">
       {/* Header: filters align right on desktop, wrap below on narrow screens. */}
-      <header className="mcj-dashboard-header">
+      <header className="mcj-dashboard-header mcj-page-header">
         <div className="mcj-chart-slot">
           <h1 className="mcj-page-title">Business Overview</h1>
           <p className="mcj-section-subtitle">

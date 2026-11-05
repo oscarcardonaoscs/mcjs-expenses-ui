@@ -7,6 +7,7 @@ import {
   updateHelper,
   deleteHelper,
 } from "../../services/helpersService";
+import "../../styles/mcj-ui.css";
 
 function HelpersPage() {
   const [helpers, setHelpers] = useState([]);
@@ -24,7 +25,6 @@ function HelpersPage() {
     try {
       setLoading(true);
       setError("");
-
       const data = await getHelpers();
       setHelpers(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -58,13 +58,11 @@ function HelpersPage() {
     try {
       setFormLoading(true);
       setError("");
-
       if (editingHelper) {
         await updateHelper(editingHelper.id, formData);
       } else {
         await createHelper(formData);
       }
-
       setShowForm(false);
       setEditingHelper(null);
       await loadHelpers();
@@ -79,19 +77,14 @@ function HelpersPage() {
     const helperName = [helper.first_name, helper.last_name]
       .filter(Boolean)
       .join(" ");
-
     const confirmed = window.confirm(
       `Are you sure you want to delete helper "${helperName}"?`,
     );
-
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
       setLoading(true);
       setError("");
-
       await deleteHelper(helper.id);
       await loadHelpers();
     } catch (err) {
@@ -102,31 +95,28 @@ function HelpersPage() {
   };
 
   return (
-    <div className="container-fluid py-3">
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            <div>
-              <h1 className="h3 mb-1">Helpers</h1>
-              <p className="text-muted mb-0">
-                Manage helpers and their default rates.
-              </p>
-            </div>
-
-            {!showForm && (
-              <div className="w-100 w-md-auto">
-                <button
-                  type="button"
-                  className="btn btn-primary w-100"
-                  onClick={handleNew}
-                >
-                  New Helper
-                </button>
-              </div>
-            )}
-          </div>
+    <div className="w-100">
+      <header className="mcj-page-header">
+        <div>
+          <h1 className="mcj-page-title">Helpers</h1>
+          <p className="mcj-page-subtitle">
+            Manage helpers and their default rates.
+          </p>
         </div>
-      </div>
+        {!showForm && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleNew}
+            disabled={loading}
+          >
+            <span aria-hidden="true" className="me-1">
+              +
+            </span>{" "}
+            New Helper
+          </button>
+        )}
+      </header>
 
       {error && (
         <div className="alert alert-danger" role="alert">

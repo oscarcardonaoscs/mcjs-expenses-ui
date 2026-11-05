@@ -10,6 +10,7 @@ import {
   updateHelperWorkEvent,
   deleteHelperTimeEntry,
 } from "../../services/helperTimeEntriesService";
+import "../../styles/mcj-ui.css";
 
 function HelperTimeEntriesPage() {
   const [entries, setEntries] = useState([]);
@@ -63,14 +64,9 @@ function HelperTimeEntriesPage() {
       }
 
       const workEvent = await getHelperWorkEvent(entry.work_event_id);
-
       setEditingEntry(workEvent);
       setShowForm(true);
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err.message || "Failed to load work event.");
     } finally {
@@ -111,9 +107,7 @@ function HelperTimeEntriesPage() {
       `Are you sure you want to delete this time entry for ${entry.work_date}?`,
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
       setError("");
@@ -125,31 +119,28 @@ function HelperTimeEntriesPage() {
   };
 
   return (
-    <div className="container-fluid py-3">
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            <div>
-              <h1 className="h3 mb-1">Helper Time Entries</h1>
-              <p className="text-muted mb-0">
-                Track work date, helper, client, and worked hours.
-              </p>
-            </div>
-
-            {!showForm && (
-              <div className="w-100 w-md-auto">
-                <button
-                  type="button"
-                  className="btn btn-primary w-100"
-                  onClick={handleNew}
-                >
-                  New Time Entry
-                </button>
-              </div>
-            )}
-          </div>
+    <div className="w-100">
+      <header className="mcj-page-header">
+        <div>
+          <h1 className="mcj-page-title">Helper Time Entries</h1>
+          <p className="mcj-page-subtitle">
+            Track work date, helper, client, and worked hours.
+          </p>
         </div>
-      </div>
+        {!showForm && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleNew}
+            disabled={loading || formLoading}
+          >
+            <span aria-hidden="true" className="me-1">
+              +
+            </span>
+            New Time Entry
+          </button>
+        )}
+      </header>
 
       {error && (
         <div className="alert alert-danger" role="alert">
@@ -171,6 +162,7 @@ function HelperTimeEntriesPage() {
           entries={entries}
           helpers={helpers}
           loading={loading}
+          actionsDisabled={formLoading}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
